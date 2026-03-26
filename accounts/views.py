@@ -1,0 +1,873 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q, Avg
+from django.utils import timezone
+from .forms import UserRegistrationForm, UserLoginForm, JobForm, WorkerProfileForm, AvailabilityForm, QuotationForm, ReviewForm, UserProfileForm, NegotiationForm, NegotiationMessageForm
+from .models import User, Job, WorkerProfile, Availability, Quotation, Review, UserProfile, Negotiation, NegotiationMessage
+from .utils import rate_limit, send_verification_email, send_password_reset_email
+
+def home(request):
+    return render(request, 'index.html')
+
+
+@rate_limit(key_prefix='register', max_attempts=3, timeout=600)
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            
+            send_verification_email(user, request)
+            
+            messages.success(request, 'Registration successful! Please check your email to verify your account.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Please fix the errors below.')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'register.html', {'form': form})
+
+@login_required
+def dashboard(request):
+    if request.user.role == 'customer':
+        return redirect('customer_dashboard')
+    elif request.user.role == 'worker':
+        return redirect('worker_dashboard')
+    return redirect('home')
+
+
+@rate_limit(key_prefix='login', max_attempts=5, timeout=300)
+def user_login(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = UserLoginForm(request, data=request.POST)
+        email = request.POST.get('username')
+        
+        try:
+            user_obj = User.objects.get(email=email)
+            if not user_obj.is_email_verified:
+                messages.warning(request, 'Please verify your email first. Check your inbox for the verification link.')
+                return render(request, 'login.html', {'form': form})
+        except User.DoesNotExist:
+            pass
+        
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, 'Login successful!')
+            return redirect('dashboard')
+    else:
+        form = UserLoginForm()
+    return render(request, 'login.html', {'form': form})
+
+def user_logout(request):
+    logout(request)
+    messages.info(request, 'You have been logged out.')
+    return redirect('home')
+
+@login_required
+def accept_quotation(request, quotation_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    quotation = get_object_or_404(Quotation, id=quotation_id, job__customer=request.user, status='pending')
+    
+    worker = quotation.worker
+    job_date = quotation.job.date
+    
+    conflicting_jobs = Job.objects.filter(
+        worker=worker,
+        date=job_date,
+        status__in=['open', 'confirmed']
+    ).exists()
+    
+    if conflicting_jobs:
+        messages.error(request, f'Worker {worker.name} already has a job on {job_date}. Cannot accept this quotation.')
+        return redirect('view_quotations', job_id=quotation.job.id)
+    
+    quotation.status = 'accepted'
+    quotation.save()
+    
+    job = quotation.job
+    job.worker = worker
+    job.status = 'confirmed'
+    job.save()
+    
+    Quotation.objects.filter(job=job).exclude(id=quotation_id).update(status='rejected')
+    
+    job_time_slot = get_worker_time_slot(job.time_slot)
+    Availability.objects.filter(
+        worker=worker,
+        date=job_date,
+        time_slot=job_time_slot
+    ).delete()
+    
+    messages.success(request, f'Quotation accepted! Job assigned to {worker.name}')
+    return redirect('customer_dashboard')
+
+@login_required
+def customer_dashboard(request):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    jobs = Job.objects.filter(customer=request.user).order_by('-created_at')
+    jobs_open = jobs.filter(status='open').count()
+    jobs_completed = jobs.filter(status='completed').count()
+    
+    from django.db.models import Count
+    
+    active_jobs = jobs.filter(status='confirmed').count()
+    pending_quotations = Quotation.objects.filter(job__customer=request.user, status='pending').count()
+    
+    active_negotiations = Negotiation.objects.filter(customer=request.user, status='active').order_by('-updated_at')
+    
+    return render(request, 'customer_dashboard.html', {
+        'jobs': jobs,
+        'total_jobs': jobs.count(),
+        'active_jobs': active_jobs,
+        'completed_jobs': jobs_completed,
+        'pending_quotations': pending_quotations,
+        'active_negotiations': active_negotiations
+    })
+
+@login_required
+def create_job(request):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = JobForm(request.POST, request.FILES)
+        
+        if 'select_worker' in request.POST:
+            worker_id = request.POST.get('worker_id')
+            job_id = request.POST.get('job_id')
+            worker = get_object_or_404(User, id=worker_id, role='worker')
+            job = get_object_or_404(Job, id=job_id, customer=request.user)
+            job.worker = worker
+            job.status = 'confirmed'
+            job.save()
+            messages.success(request, f'Job assigned to {worker.name}!')
+            return redirect('customer_dashboard')
+        
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.customer = request.user
+            job.save()
+            
+            matching_workers = get_matching_workers(
+                job.location,
+                job.date,
+                job.time_slot,
+                job.category
+            )
+            
+            if matching_workers:
+                return render(request, 'select_worker.html', {
+                    'form': form,
+                    'job': job,
+                    'workers': matching_workers
+                })
+            
+            messages.success(request, 'Job created! No workers available for this slot.')
+            return redirect('customer_dashboard')
+    else:
+        form = JobForm()
+    return render(request, 'create_job.html', {'form': form})
+
+@login_required
+def edit_job(request, job_id):
+    job = get_object_or_404(Job, id=job_id, customer=request.user)
+    
+    if job.status != 'open':
+        messages.error(request, 'You can only edit jobs that are still open.')
+        return redirect('customer_dashboard')
+    
+    if request.method == 'POST':
+        form = JobForm(request.POST, request.FILES, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Job updated successfully!')
+            return redirect('customer_dashboard')
+    else:
+        form = JobForm(instance=job)
+    
+    return render(request, 'edit_job.html', {'form': form, 'job': job})
+
+@login_required
+def delete_job(request, job_id):
+    job = get_object_or_404(Job, id=job_id, customer=request.user)
+    
+    if job.status != 'open':
+        messages.error(request, 'You can only delete jobs that are still open.')
+        return redirect('customer_dashboard')
+    
+    if request.method == 'POST':
+        job.delete()
+        messages.success(request, 'Job deleted successfully!')
+        return redirect('customer_dashboard')
+    
+    return render(request, 'delete_job_confirm.html', {'job': job})
+
+def get_matching_workers(location, date, time_slot, category):
+    slot_map = {
+        'morning': 'morning',
+        'afternoon': 'afternoon',
+        'evening': 'evening',
+    }
+    
+    mapped_slot = slot_map.get(time_slot.lower().strip(), 'full_day')
+    
+    availability_filter = Q(date=date) & (
+        Q(time_slot=mapped_slot) | Q(time_slot='full_day')
+    )
+    
+    available_workers = Availability.objects.filter(
+        availability_filter
+    ).values_list('worker_id', flat=True)
+    
+    workers = User.objects.filter(
+        id__in=available_workers,
+        location__iexact=location,
+        role='worker',
+        worker_profile__skills__icontains=category
+    ).select_related('worker_profile')
+    
+    return workers
+
+def get_worker_time_slot(time_str):
+    time_str = time_str.lower().strip()
+    
+    if 'morning' in time_str:
+        return 'morning'
+    elif 'afternoon' in time_str:
+        return 'afternoon'
+    elif 'evening' in time_str:
+        return 'evening'
+    elif 'full' in time_str or 'day' in time_str:
+        return 'full_day'
+    
+    if '9:00' in time_str and '12:00' in time_str:
+        return 'morning'
+    elif '12:00' in time_str and '18:00' in time_str:
+        return 'afternoon'
+    elif '18:00' in time_str and '22:00' in time_str:
+        return 'evening'
+    
+    return 'morning'
+
+@login_required
+def worker_dashboard(request):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    worker = request.user
+    profile = getattr(worker, 'worker_profile', None)
+    
+    if not profile:
+        messages.warning(request, 'Please complete your worker profile first.')
+        return redirect('worker_profile')
+    
+    worker_skills_raw = profile.skills
+    if worker_skills_raw.startswith('['):
+        import ast
+        try:
+            worker_skills = [s.strip().lower() for s in ast.literal_eval(worker_skills_raw)]
+        except:
+            worker_skills = [s.strip().lower() for s in worker_skills_raw.split(',') if s.strip()]
+    else:
+        worker_skills = [s.strip().lower() for s in worker_skills_raw.split(',') if s.strip()]
+    
+    availabilities = Availability.objects.filter(worker=worker, date__gte=timezone.now().date())
+    available_slots = set()
+    for avail in availabilities:
+        available_slots.add(avail.time_slot)
+    
+    jobs = Job.objects.filter(status='open').order_by('-created_at')
+    
+    matched_jobs = []
+    for job in jobs:
+        location_match = profile.location and job.location.lower().strip() == profile.location.lower().strip()
+        skill_match = job.category.lower() in worker_skills or 'other' in worker_skills
+        
+        if 'full_day' in available_slots:
+            time_slot_match = True
+        else:
+            time_slot_match = not available_slots or job.time_slot in available_slots
+        
+        if location_match and skill_match and time_slot_match:
+            matched_jobs.append(job)
+    
+    confirmed_jobs = Job.objects.filter(worker=worker, status='confirmed').order_by('date')
+    completed_jobs = Job.objects.filter(worker=worker, status='completed')
+    completed_jobs_count = completed_jobs.count()
+    
+    total_earnings = sum(job.quotations.filter(status='accepted').first().offered_price for job in completed_jobs if job.quotations.filter(status='accepted').first())
+    
+    active_negotiations = Negotiation.objects.filter(worker=worker, status='active').order_by('-updated_at')
+    
+    return render(request, 'worker_dashboard.html', {
+        'jobs': matched_jobs, 
+        'confirmed_jobs': confirmed_jobs, 
+        'profile': profile,
+        'completed_jobs_count': completed_jobs_count,
+        'total_earnings': total_earnings,
+        'active_negotiations': active_negotiations
+    })
+
+@login_required
+def worker_profile(request):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    try:
+        profile = WorkerProfile.objects.get(user=request.user)
+    except WorkerProfile.DoesNotExist:
+        profile = None
+    
+    skill_choices = [
+        ('plumbing', 'Plumbing'),
+        ('electrical', 'Electrical'),
+        ('cleaning', 'Cleaning'),
+        ('painting', 'Painting'),
+        ('carpentry', 'Carpentry'),
+        ('gardening', 'Gardening'),
+        ('moving', 'Moving'),
+        ('ac', 'AC Technician'),
+        ('appliance', 'Appliance Repair'),
+        ('other', 'Other'),
+    ]
+    
+    if request.method == 'POST':
+        form = WorkerProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            
+            skills_data = request.POST.get('skills', '')
+            profile.skills = skills_data
+            
+            profile.location = request.POST.get('location', '')
+            
+            profile.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('worker_dashboard')
+    else:
+        form = WorkerProfileForm(instance=profile)
+    
+    return render(request, 'worker_profile.html', {
+        'form': form, 
+        'profile': profile,
+        'skill_choices': skill_choices,
+        'empty_list': []
+    })
+
+@login_required
+def manage_availability(request):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        time_slot = request.POST.get('time_slot')
+        
+        if date_str and time_slot:
+            try:
+                from datetime import datetime
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                
+                availability = Availability(
+                    worker=request.user,
+                    date=date_obj,
+                    time_slot=time_slot
+                )
+                availability.save()
+                messages.success(request, 'Availability added successfully!')
+            except Exception as e:
+                messages.error(request, 'Invalid date or time slot.')
+        else:
+            messages.error(request, 'Please fill all fields.')
+        return redirect('manage_availability')
+    
+    form = AvailabilityForm()
+    availabilities = Availability.objects.filter(worker=request.user).order_by('date')
+    return render(request, 'manage_availability.html', {'form': form, 'availabilities': availabilities})
+
+@login_required
+def delete_availability(request, availability_id):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    availability = get_object_or_404(Availability, id=availability_id, worker=request.user)
+    availability.delete()
+    messages.success(request, 'Availability removed.')
+    return redirect('manage_availability')
+
+@login_required
+def submit_quotation(request, job_id):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    job = get_object_or_404(Job, id=job_id, status='open')
+    
+    existing_quotation = Quotation.objects.filter(job=job, worker=request.user).first()
+    if existing_quotation:
+        messages.error(request, 'You have already submitted a quotation for this job.')
+        return redirect('worker_dashboard')
+    
+    if request.method == 'POST':
+        form = QuotationForm(request.POST)
+        if form.is_valid():
+            quotation = form.save(commit=False)
+            quotation.job = job
+            quotation.worker = request.user
+            quotation.save()
+            messages.success(request, 'Quotation submitted successfully!')
+            return redirect('worker_dashboard')
+    else:
+        form = QuotationForm()
+    
+    return render(request, 'submit_quotation.html', {'form': form, 'job': job})
+
+@login_required
+def view_quotations(request, job_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    job = get_object_or_404(Job, id=job_id, customer=request.user)
+    quotations = Quotation.objects.filter(job=job).select_related('worker__worker_profile')
+    
+    return render(request, 'view_quotations.html', {'job': job, 'quotations': quotations})
+
+@login_required
+def accept_quotation(request, quotation_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    quotation = get_object_or_404(Quotation, id=quotation_id, job__customer=request.user, status='pending')
+    
+    worker = quotation.worker
+    job_date = quotation.job.date
+    
+    conflicting_jobs = Job.objects.filter(
+        worker=worker,
+        date=job_date,
+        status__in=['open', 'confirmed']
+    ).exists()
+    
+    if conflicting_jobs:
+        messages.error(request, f'Worker {worker.name} already has a job on {job_date}. Cannot accept this quotation.')
+        return redirect('view_quotations', job_id=quotation.job.id)
+    
+    quotation.status = 'accepted'
+    quotation.save()
+    
+    job = quotation.job
+    job.worker = worker
+    job.status = 'confirmed'
+    job.save()
+    
+    Quotation.objects.filter(job=job).exclude(id=quotation_id).update(status='rejected')
+    
+    job_time_slot = get_worker_time_slot(job.time_slot)
+    Availability.objects.filter(
+        worker=worker,
+        date=job_date,
+        time_slot=job_time_slot
+    ).delete()
+    
+    messages.success(request, f'Quotation accepted! Job assigned to {worker.name}')
+    return redirect('customer_dashboard')
+
+@login_required
+def reject_quotation(request, quotation_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    quotation = get_object_or_404(Quotation, id=quotation_id, job__customer=request.user, status='pending')
+    quotation.status = 'rejected'
+    quotation.save()
+    
+    messages.success(request, 'Quotation rejected.')
+    return redirect('view_quotations', job_id=quotation.job.id)
+
+@login_required
+def mark_job_completed(request, job_id):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    job = get_object_or_404(Job, id=job_id, worker=request.user, status='confirmed')
+    job.status = 'completed'
+    job.save()
+    
+    messages.success(request, 'Job marked as completed!')
+    return redirect('worker_dashboard')
+
+@login_required
+def create_review(request, job_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    job = get_object_or_404(Job, id=job_id, customer=request.user, status='completed')
+    
+    if hasattr(job, 'review'):
+        messages.error(request, 'You have already reviewed this job.')
+        return redirect('customer_dashboard')
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.job = job
+            review.customer = request.user
+            review.worker = job.worker
+            review.save()
+            
+            worker_profile = job.worker.worker_profile
+            avg_rating = Review.objects.filter(worker=job.worker).aggregate(Avg('rating'))['rating__avg']
+            worker_profile.avg_rating = round(avg_rating, 2)
+            worker_profile.save()
+            
+            messages.success(request, 'Review submitted successfully!')
+            return redirect('customer_dashboard')
+    else:
+        form = ReviewForm()
+    
+    return render(request, 'create_review.html', {'form': form, 'job': job})
+
+
+@login_required
+def profile_view(request):
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = None
+    
+    return render(request, 'profile.html', {
+        'profile': user_profile,
+        'user': request.user
+    })
+
+
+@login_required
+def edit_profile(request):
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = None
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=user_profile)
+    
+    return render(request, 'edit_profile.html', {
+        'form': form,
+        'profile': user_profile
+    })
+
+
+@login_required
+def start_negotiation(request, quotation_id):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    quotation = get_object_or_404(Quotation, id=quotation_id, job__customer=request.user)
+    
+    existing_negotiation = Negotiation.objects.filter(quotation=quotation, worker=quotation.worker).first()
+    if existing_negotiation:
+        return redirect('negotiation_detail', negotiation_id=existing_negotiation.id)
+    
+    if request.method == 'POST':
+        initial_price = request.POST.get('initial_price')
+        message = request.POST.get('message', '')
+        
+        if not initial_price:
+            messages.error(request, 'Please enter a starting price for negotiation.')
+            return redirect('start_negotiation', quotation_id=quotation_id)
+        
+        negotiation = Negotiation.objects.create(
+            quotation=quotation,
+            job=quotation.job,
+            worker=quotation.worker,
+            customer=request.user,
+            current_price=initial_price
+        )
+        
+        NegotiationMessage.objects.create(
+            negotiation=negotiation,
+            sender=request.user,
+            message_type='offer',
+            price=initial_price,
+            content=message or f'Starting negotiation at ₹{initial_price}'
+        )
+        
+        messages.success(request, 'Negotiation started! The worker will be notified.')
+        return redirect('negotiation_detail', negotiation_id=negotiation.id)
+    
+    return render(request, 'start_negotiation.html', {'quotation': quotation})
+
+
+@login_required
+def worker_start_negotiation(request, job_id):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    job = get_object_or_404(Job, id=job_id)
+    
+    quotation = Quotation.objects.filter(job=job, worker=request.user).first()
+    if not quotation:
+        messages.error(request, 'You need to submit a quotation first.')
+        return redirect('worker_dashboard')
+    
+    existing_negotiation = Negotiation.objects.filter(quotation=quotation, worker=request.user).first()
+    if existing_negotiation:
+        return redirect('negotiation_detail', negotiation_id=existing_negotiation.id)
+    
+    if request.method == 'POST':
+        initial_price = request.POST.get('initial_price')
+        message = request.POST.get('message', '')
+        
+        if not initial_price:
+            messages.error(request, 'Please enter a starting price for negotiation.')
+            return redirect('worker_start_negotiation', job_id=job_id)
+        
+        negotiation = Negotiation.objects.create(
+            quotation=quotation,
+            job=job,
+            worker=request.user,
+            customer=job.customer,
+            current_price=initial_price
+        )
+        
+        NegotiationMessage.objects.create(
+            negotiation=negotiation,
+            sender=request.user,
+            message_type='offer',
+            price=initial_price,
+            content=message or f'Starting negotiation at ₹{initial_price}'
+        )
+        
+        messages.success(request, 'Negotiation started! The customer will be notified.')
+        return redirect('negotiation_detail', negotiation_id=negotiation.id)
+    
+    return render(request, 'worker_start_negotiation.html', {'job': job, 'quotation': quotation})
+
+
+@login_required
+def negotiation_detail(request, negotiation_id):
+    negotiation = get_object_or_404(Negotiation, id=negotiation_id)
+    
+    if request.user not in [negotiation.customer, negotiation.worker]:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'send':
+            form = NegotiationMessageForm(request.POST)
+            if form.is_valid():
+                msg_type = form.cleaned_data['message_type']
+                price = form.cleaned_data.get('price')
+                content = form.cleaned_data['content']
+                
+                NegotiationMessage.objects.create(
+                    negotiation=negotiation,
+                    sender=request.user,
+                    message_type=msg_type,
+                    price=price,
+                    content=content
+                )
+                
+                if price:
+                    negotiation.current_price = price
+                    negotiation.save()
+                
+                messages.success(request, 'Message sent!')
+                return redirect('negotiation_detail', negotiation_id=negotiation.id)
+        
+        elif action == 'accept':
+            if request.user != negotiation.worker:
+                messages.error(request, 'You are not authorized to accept this negotiation.')
+                return redirect('negotiation_detail', negotiation_id=negotiation.id)
+            
+            negotiation.status = 'accepted'
+            negotiation.save()
+            
+            NegotiationMessage.objects.create(
+                negotiation=negotiation,
+                sender=request.user,
+                message_type='accept',
+                content=f'Negotiation accepted at ₹{negotiation.current_price}'
+            )
+            
+            quotation = negotiation.quotation
+            quotation.status = 'accepted'
+            quotation.save()
+            
+            job = negotiation.job
+            job.worker = negotiation.worker
+            job.status = 'confirmed'
+            job.save()
+            
+            Quotation.objects.filter(job=job).exclude(id=quotation.id).update(status='rejected')
+            
+            Availability.objects.filter(
+                worker=negotiation.worker,
+                date=job.date,
+                time_slot=get_worker_time_slot(job.time_slot)
+            ).delete()
+            
+            messages.success(request, f'Negotiation accepted! Job confirmed with {negotiation.worker.name}')
+            return redirect('worker_dashboard')
+        
+        elif action == 'reject':
+            negotiation.status = 'rejected'
+            negotiation.save()
+            
+            NegotiationMessage.objects.create(
+                negotiation=negotiation,
+                sender=request.user,
+                message_type='reject',
+                content='Negotiation rejected'
+            )
+            
+            messages.info(request, 'Negotiation rejected.')
+            return redirect('negotiation_detail', negotiation_id=negotiation.id)
+        
+        elif action == 'cancel':
+            negotiation.status = 'cancelled'
+            negotiation.save()
+            
+            NegotiationMessage.objects.create(
+                negotiation=negotiation,
+                sender=request.user,
+                message_type='reject',
+                content='Negotiation cancelled'
+            )
+            
+            messages.info(request, 'Negotiation cancelled.')
+            return redirect('customer_dashboard' if request.user.role == 'customer' else 'worker_dashboard')
+    
+    form = NegotiationMessageForm()
+    messages_list = negotiation.messages.all().order_by('created_at')
+    
+    return render(request, 'negotiation_detail.html', {
+        'negotiation': negotiation,
+        'form': form,
+        'messages': messages_list
+    })
+
+
+@login_required
+def customer_negotiations(request):
+    if request.user.role != 'customer':
+        return redirect('dashboard')
+    
+    negotiations = Negotiation.objects.filter(customer=request.user).order_by('-updated_at')
+    return render(request, 'customer_negotiations.html', {'negotiations': negotiations})
+
+
+@login_required
+def worker_negotiations(request):
+    if request.user.role != 'worker':
+        return redirect('dashboard')
+    
+    negotiations = Negotiation.objects.filter(worker=request.user).order_by('-updated_at')
+    return render(request, 'worker_negotiations.html', {'negotiations': negotiations})
+
+
+def verify_email(request, token):
+    try:
+        user = User.objects.get(email_verification_token=token)
+        
+        if user.is_email_verified:
+            messages.info(request, 'Email already verified.')
+            return redirect('login')
+        
+        if user.verify_email(token):
+            messages.success(request, 'Email verified successfully! You can now login.')
+        else:
+            messages.error(request, 'Invalid or expired verification link.')
+        
+        return redirect('login')
+    except User.DoesNotExist:
+        messages.error(request, 'Invalid verification link.')
+        return redirect('login')
+
+
+def resend_verification(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            if user.is_email_verified:
+                messages.info(request, 'Email already verified.')
+                return redirect('login')
+            
+            send_verification_email(user, request)
+            messages.success(request, 'Verification email sent! Please check your inbox.')
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email.')
+    
+    return render(request, 'resend_verification.html')
+
+
+@rate_limit(key_prefix='password_reset', max_attempts=3, timeout=600)
+def password_reset_request(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            send_password_reset_email(user, request)
+            messages.success(request, 'Password reset email sent! Please check your inbox.')
+            return redirect('login')
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email.')
+    
+    return render(request, 'password_reset_request.html')
+
+
+def password_reset_confirm(request, token):
+    try:
+        user = User.objects.get(password_reset_token=token)
+        
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            
+            if password1 != password2:
+                messages.error(request, 'Passwords do not match.')
+                return render(request, 'password_reset_confirm.html', {'token': token})
+            
+            if len(password1) < 8:
+                messages.error(request, 'Password must be at least 8 characters.')
+                return render(request, 'password_reset_confirm.html', {'token': token})
+            
+            if user.reset_password(token, password1):
+                messages.success(request, 'Password reset successful! Please login with your new password.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Invalid or expired reset link.')
+                return redirect('login')
+        
+        return render(request, 'password_reset_confirm.html', {'token': token})
+    except User.DoesNotExist:
+        messages.error(request, 'Invalid reset link.')
+        return redirect('login')

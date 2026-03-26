@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Job - LocalKaam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        border: 1px solid #eee;
+    }
+    .job-category {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    .job-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .badge-open { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .job-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    .job-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Delete Job</h2>
+    <p class="text-muted">Are you sure you want to delete this job?</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <strong>Warning:</strong> This action cannot be undone.
+        </div>
+        
+        <div class="job-card mb-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="job-category">
+                    {% if job.category == 'ac' %}AC Technician
+                    {% else %}{{ job.get_category_display }}{% endif %}
+                </span>
+                <span class="job-badge badge-open">
+                    {{ job.get_status_display }}
+                </span>
+            </div>
+            <p class="job-description">{{ job.exact_location }}</p>
+            <div class="job-details">
+                <span><i class="bi bi-geo-alt me-1"></i> {{ job.location }}</span>
+                <span><i class="bi bi-calendar me-1"></i> {{ job.date }}</span>
+                <span><i class="bi bi-clock me-1"></i> 
+                    {% if job.time_slot == 'morning' %}Morning
+                    {% elif job.time_slot == 'afternoon' %}Afternoon
+                    {% elif job.time_slot == 'evening' %}Evening{% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i> Delete Job
+                </button>
+                <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

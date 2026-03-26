@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - LocalKaam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .photo-upload-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .photo-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary);
+    }
+    
+    .photo-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #6c757d;
+        border: 4px solid var(--primary);
+    }
+    
+    .photo-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: var(--primary);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid white;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .private-icon {
+        color: #3498db;
+    }
+    
+    .public-icon {
+        color: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Edit Profile</h2>
+    <p class="text-muted">Update your personal information</p>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="section-card text-center">
+                <div class="photo-upload-container">
+                    {% if profile and profile.profile_photo %}
+                        <img src="{{ profile.profile_photo.url }}" alt="Profile Photo" class="photo-preview" id="photoPreview">
+                    {% else %}
+                        <div class="photo-placeholder" id="photoPlaceholder">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <img src="" alt="Profile Photo" class="photo-preview" id="photoPreview" style="display: none;">
+                    {% endif %}
+                    <label for="id_profile_photo" class="photo-overlay">
+                        <i class="bi bi-camera"></i>
+                    </label>
+                    <input type="file" name="profile_photo" id="id_profile_photo" class="d-none" accept="image/*">
+                </div>
+                <p class="text-muted small">Click camera icon to change photo</p>
+                <p class="small"><strong>Public:</strong> Your profile photo is visible to everyone</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="section-card">
+                <h5 class="section-title">
+                    <i class="bi bi-person-badge public-icon"></i>Public Information
+                </h5>
+                <div class="mb-3">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" class="form-control" rows="3" placeholder="Tell others about yourself...">{{ profile.bio|default:'' }}</textarea>
+                    <small class="text-muted">This will be visible to other users</small>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <h5 class="section-title">
+                    <i class="bi bi-shield-lock private-icon"></i>Private Information
+                    <span class="badge bg-primary float-end" style="font-size: 0.7rem;">Only you can see</span>
+                </h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone_number" class="form-control" value="{{ profile.phone_number|default:'' }}" placeholder="Phone number">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Emergency Contact</label>
+                        <input type="text" name="emergency_contact" class="form-control" value="{{ profile.emergency_contact|default:'' }}" placeholder="Emergency contact number">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control" rows="2" placeholder="Your address">{{ profile.address|default:'' }}</textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-control" value="{{ profile.date_of_birth|date:'Y-m-d'|default:'' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" class="form-select">
+                            <option value="">Select gender</option>
+                            <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if profile.gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="prefer_not_to_say" {% if profile.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-2"></i>Save Changes
+                </button>
+                <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-2"></i>Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.getElementById('id_profile_photo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+                document.getElementById('photoPreview').style.display = 'block';
+                const placeholder = document.getElementById('photoPlaceholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

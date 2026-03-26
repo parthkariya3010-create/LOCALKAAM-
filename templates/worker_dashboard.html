@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Dashboard - LocalKaam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 1200px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 576px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon.blue { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+    .stat-icon.green { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .stat-icon.orange { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
+    .stat-icon.purple { background: rgba(155, 89, 182, 0.1); color: #9b59b6; }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .job-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+    
+    .job-card:hover {
+        border-color: #3498db;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .job-card:last-child {
+        margin-bottom: 0;
+    }
+    
+    .job-category {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    
+    .job-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-open { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .badge-confirmed { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
+    .badge-completed { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+    
+    .job-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin: 0.75rem 0;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .job-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .negotiation-badge {
+        background: #9b59b6;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="stat-number">{{ confirmed_jobs.count }}</div>
+            <div class="stat-label">My Jobs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-number">{{ completed_jobs_count }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-number">₹{% if total_earnings %}{{ total_earnings|floatformat:0 }}{% else %}0{% endif %}</div>
+            <div class="stat-label">Total Earnings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="bi bi-search"></i>
+            </div>
+            <div class="stat-number">{{ jobs.count }}</div>
+            <div class="stat-label">Available Jobs</div>
+        </div>
+    </div>
+
+    <!-- Active Negotiations -->
+    {% if active_negotiations %}
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-chat-dots me-2"></i>Active Negotiations</h5>
+            <a href="{% url 'worker_negotiations' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="section-body">
+            {% for neg in active_negotiations|slice:":3" %}
+            <div class="job-card" style="border-left: 4px solid #9b59b6;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="job-category">{{ neg.job.get_category_display }}</span>
+                    <span class="negotiation-badge">{{ neg.current_price }}</span>
+                </div>
+                <p class="job-description">{{ neg.customer.name }} - {{ neg.job.location }}</p>
+                <div class="job-details">
+                    <span><i class="bi bi-person me-1"></i> {{ neg.customer.name }}</span>
+                    <span><i class="bi bi-currency-rupee me-1"></i> {{ neg.current_price }}</span>
+                    <span><i class="bi bi-clock me-1"></i> {{ neg.updated_at|timesince }} ago</span>
+                </div>
+                <div>
+                    <a href="{% url 'negotiation_detail' neg.id %}" class="btn btn-sm" style="background: #9b59b6; color: white;">
+                        <i class="bi bi-chat-dots me-1"></i> Continue Chat
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- My Jobs Section -->
+    {% if confirmed_jobs %}
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-briefcase me-2"></i>My Jobs</h5>
+        </div>
+        <div class="section-body">
+            {% for job in confirmed_jobs %}
+            <div class="job-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="job-category">
+                        {% if job.category == 'ac' %}AC Technician
+                        {% else %}{{ job.get_category_display }}{% endif %}
+                    </span>
+                    <span class="job-badge badge-{{ job.status }}">
+                        {{ job.get_status_display }}
+                    </span>
+                </div>
+                <p class="job-description">{{ job.exact_location }}</p>
+                {% if job.image %}
+                <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                {% endif %}
+                <div class="job-details">
+                    <span><i class="bi bi-person me-1"></i> {{ job.customer.name }}</span>
+                    <span><i class="bi bi-geo-alt me-1"></i> {{ job.location }}</span>
+                    <span><i class="bi bi-calendar me-1"></i> {{ job.date }}</span>
+                    <span><i class="bi bi-clock me-1"></i> 
+                        {% if job.time_slot == 'morning' %}Morning
+                        {% elif job.time_slot == 'afternoon' %}Afternoon
+                        {% elif job.time_slot == 'evening' %}Evening{% endif %}
+                    </span>
+                </div>
+                <div>
+                    {% if job.status == 'confirmed' %}
+                    <a href="{% url 'mark_job_completed' job.id %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-check-lg me-1"></i> Mark as Completed
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Available Jobs Section -->
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-search me-2"></i>Available Jobs</h5>
+        </div>
+        <div class="section-body">
+            {% if jobs %}
+                {% for job in jobs %}
+                <div class="job-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="job-category">
+                            {% if job.category == 'ac' %}AC Technician
+                            {% else %}{{ job.get_category_display }}{% endif %}
+                        </span>
+                        <span class="job-badge badge-open">
+                            Open
+                        </span>
+                    </div>
+                    <p class="job-description">{{ job.exact_location }}</p>
+                    {% if job.image %}
+                    <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                    {% endif %}
+                    <div class="job-details">
+                        <span><i class="bi bi-person me-1"></i> {{ job.customer.name }}</span>
+                        <span><i class="bi bi-geo-alt me-1"></i> {{ job.location }}</span>
+                        <span><i class="bi bi-calendar me-1"></i> {{ job.date }}</span>
+                        <span><i class="bi bi-clock me-1"></i> 
+                            {% if job.time_slot == 'morning' %}Morning
+                            {% elif job.time_slot == 'afternoon' %}Afternoon
+                            {% elif job.time_slot == 'evening' %}Evening{% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <a href="{% url 'submit_quotation' job.id %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-send me-1"></i> Submit Quotation
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search" style="font-size: 3rem; color: #dee2e6;"></i>
+                <p class="text-muted mt-3">No available jobs in your area</p>
+                <p class="text-muted">Update your profile and availability to see more jobs</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

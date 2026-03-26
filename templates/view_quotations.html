@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Quotations - LocalKaam{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #1e3a5f;
+        --secondary: #3498db;
+        --accent: #00d9a5;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+    }
+    
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--secondary);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+        color: var(--primary);
+        transform: translateX(-5px);
+    }
+    
+    .job-summary {
+        background: linear-gradient(135deg, var(--primary), #2c5282);
+        color: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .job-summary h4 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-summary p {
+        opacity: 0.9;
+        margin-bottom: 0.25rem;
+    }
+    
+    .quotation-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .quotation-card:hover {
+        border-color: var(--secondary);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    }
+    
+    .quotation-card.accepted {
+        border-color: var(--success);
+        background: rgba(39, 174, 96, 0.02);
+    }
+    
+    .quotation-card.rejected {
+        opacity: 0.6;
+    }
+    
+    .worker-profile {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .worker-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .worker-info h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--primary);
+    }
+    
+    .worker-info .rating {
+        color: var(--warning);
+        font-size: 0.9rem;
+    }
+    
+    .worker-info .experience {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .price-tag {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--success);
+        margin: 1rem 0;
+    }
+    
+    .price-tag span {
+        font-size: 1rem;
+        color: #6c757d;
+        font-weight: 400;
+    }
+    
+    .quotation-message {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-accept {
+        background: var(--success);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-accept:hover {
+        background: #219a52;
+        transform: translateY(-2px);
+    }
+    
+    .btn-reject {
+        background: transparent;
+        color: var(--danger);
+        border: 2px solid var(--danger);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reject:hover {
+        background: var(--danger);
+        color: white;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .badge-pending { background: rgba(243, 156, 18, 0.1); color: var(--warning); }
+    .badge-accepted { background: rgba(39, 174, 96, 0.1); color: var(--success); }
+    .badge-rejected { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+    
+    .btn-negotiate {
+        background: transparent;
+        color: var(--secondary);
+        border: 2px solid var(--secondary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-negotiate:hover {
+        background: var(--secondary);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h4 {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <a href="{% url 'customer_dashboard' %}" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    
+    <div class="job-summary">
+        {% if job.image %}
+        <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-3" style="max-height: 200px;">
+        {% endif %}
+        <h4>{{ job.get_category_display }} - {{ job.location }}</h4>
+        <p><i class="bi bi-calendar me-2"></i>{{ job.date }}</p>
+        <p><i class="bi bi-geo-alt me-2"></i>{{ job.exact_location }}</p>
+        <p><i class="bi bi-clock me-2"></i>
+            {% if job.time_slot == 'morning' %}Morning
+            {% elif job.time_slot == 'afternoon' %}Afternoon
+            {% elif job.time_slot == 'evening' %}Evening{% endif %}
+        </p>
+    </div>
+    
+    <h4 class="mb-4">
+        <i class="bi bi-chat-dots me-2"></i>
+        Quotations Received 
+        <span class="badge bg-secondary">{{ quotations.count }}</span>
+    </h4>
+    
+    {% if quotations %}
+        {% for q in quotations %}
+        <div class="quotation-card {% if q.status == 'accepted' %}accepted{% elif q.status == 'rejected' %}rejected{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="worker-profile">
+                    <div class="worker-avatar">
+                        {{ q.worker.name.0|upper }}
+                    </div>
+                    <div class="worker-info">
+                        <h5>{{ q.worker.name }}</h5>
+                        <div class="rating">
+                            {% if q.worker.worker_profile.avg_rating > 0 %}
+                                {% with ''|center:5 as range %}
+                                {% for i in range %}
+                                    {% if forloop.counter <= q.worker.worker_profile.avg_rating|stringformat:"f"|add:0 %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                {% endwith %}
+                                {{ q.worker.worker_profile.avg_rating }}
+                            {% else %}
+                                <i class="bi bi-star"></i> New
+                            {% endif %}
+                        </div>
+                        <div class="experience">
+                            {{ q.worker.worker_profile.experience }} years experience
+                        </div>
+                    </div>
+                </div>
+                <span class="status-badge badge-{{ q.status }}">{{ q.get_status_display }}</span>
+            </div>
+            
+            <div class="price-tag">
+                ₹{{ q.offered_price }}
+                <span>/ quoted price</span>
+            </div>
+            
+            {% if q.message %}
+            <div class="quotation-message">
+                <strong>Message:</strong><br>
+                {{ q.message }}
+            </div>
+            {% endif %}
+            
+            {% if q.status == 'pending' %}
+            <div class="action-buttons">
+                <a href="{% url 'accept_quotation' q.id %}" class="btn-accept">
+                    <i class="bi bi-check-lg me-1"></i> Accept
+                </a>
+                <a href="{% url 'reject_quotation' q.id %}" class="btn-reject">
+                    <i class="bi bi-x-lg me-1"></i> Reject
+                </a>
+                <a href="{% url 'start_negotiation' q.id %}" class="btn-negotiate">
+                    <i class="bi bi-chat-dots me-1"></i> Negotiate
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h4>No quotations yet</h4>
+        <p>Waiting for workers to submit their quotes</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

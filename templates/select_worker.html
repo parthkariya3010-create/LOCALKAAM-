@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Select Worker - LocalKaam{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Select a Worker</h2>
+        <p class="text-muted mb-0">{{ job.get_category_display }} - {{ job.location }}</p>
+    </div>
+    <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<div class="mb-4 p-3 bg-light rounded">
+    <h5>Job Details</h5>
+    {% if job.image %}
+    <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-3" style="max-height: 200px;">
+    {% endif %}
+    <p class="mb-1"><strong>Category:</strong> {{ job.get_category_display }}</p>
+    <p class="mb-1"><strong>Exact Location:</strong> {{ job.exact_location }}</p>
+    <p class="mb-1"><strong>Location:</strong> {{ job.location }}</p>
+    <p class="mb-0"><strong>Date & Time:</strong> {{ job.date }} - {{ job.time_slot }}</p>
+</div>
+
+{% if workers %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="job_id" value="{{ job.id }}">
+    <div class="row g-4">
+        {% for worker in workers %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 worker-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-0">{{ worker.name }}</h5>
+                            <small class="text-muted">{{ worker.location }}</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="worker_id" value="{{ worker.id }}" id="worker_{{ worker.id }}" required>
+                        </div>
+                    </div>
+                    <p class="mb-1">
+                        <span class="star-rating">
+                            {% if worker.worker_profile.avg_rating > 0 %}
+                                {{ worker.worker_profile.avg_rating }} ★
+                            {% else %}
+                                New
+                            {% endif %}
+                        </span>
+                    </p>
+                    <p class="mb-1"><small><strong>Experience:</strong> {{ worker.worker_profile.experience }} years</small></p>
+                    <p class="mb-1"><small><strong>Price:</strong> ₹{{ worker.worker_profile.base_price }}</small></p>
+                    <p class="mb-0"><small><strong>Skills:</strong> {{ worker.worker_profile.skills }}</small></p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-4">
+        <button type="submit" name="select_worker" class="btn btn-primary btn-lg">Confirm Selection</button>
+    </div>
+</form>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-person-x" style="font-size: 3rem; color: #dee2e6;"></i>
+    <p class="text-muted mt-3">No workers available for this job</p>
+</div>
+{% endif %}
+{% endblock %}

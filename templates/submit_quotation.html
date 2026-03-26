@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Quotation - LocalKaam{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Submit Quotation</h2>
+        <p class="text-muted mb-0">{{ job.get_category_display }} - {{ job.location }}</p>
+    </div>
+    <a href="{% url 'worker_dashboard' %}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-4 p-3 bg-light rounded">
+            <h5>Job Details</h5>
+            {% if job.image %}
+            <div class="mb-3">
+                <p class="mb-2"><strong>Customer's Photo:</strong></p>
+                <img src="{{ job.image.url }}" alt="Job Photo" class="img-thumbnail" style="max-height: 250px; border-radius: 8px; cursor: pointer;" onclick="window.open('{{ job.image.url }}', '_blank')">
+                <p class="text-muted small mt-1"><i class="bi bi-info-circle"></i> Click to view full size</p>
+            </div>
+            {% else %}
+            <p class="text-muted"><i class="bi bi-image"></i> No photo uploaded by customer</p>
+            {% endif %}
+            <p class="mb-1"><strong>Category:</strong> {{ job.get_category_display }}</p>
+            <p class="mb-1"><strong>Exact Location:</strong> {{ job.exact_location }}</p>
+            <p class="mb-1"><strong>Location:</strong> {{ job.location }}</p>
+            <p class="mb-0"><strong>Date & Time:</strong> {{ job.date }} - {{ job.time_slot }}</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Your Price (₹)</label>
+                {{ form.offered_price }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Message to Customer (optional)</label>
+                {{ form.message }}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Quotation</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
