@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}My Favorites - LocalKaam{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2>My Favorites</h2>
+        <p class="text-muted mb-0">Workers you've saved for future jobs</p>
+    </div>
+    <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+{% if favorites %}
+<div class="row g-4">
+    {% for fav in favorites %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="card-title mb-0">{{ fav.worker.name }}</h5>
+                        <small class="text-muted">{{ fav.worker.location }}</small>
+                    </div>
+                    <a href="{% url 'toggle_favorite' fav.worker.id %}" class="btn btn-sm btn-danger" title="Remove from favorites">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                        </svg>
+                    </a>
+                </div>
+                <p class="mb-1">
+                    <span class="star-rating">
+                        {% if fav.worker.worker_profile.avg_rating > 0 %}
+                            {{ fav.worker.worker_profile.avg_rating }} ★
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                </p>
+                <p class="mb-1"><small><strong>Experience:</strong> {{ fav.worker.worker_profile.experience }} years</small></p>
+                <p class="mb-1"><small><strong>Price:</strong> ₹{{ fav.worker.worker_profile.base_price }}</small></p>
+                <p class="mb-0"><small><strong>Skills:</strong> {{ fav.worker.worker_profile.skills }}</small></p>
+            </div>
+            <div class="card-footer bg-white border-top-0">
+                <small class="text-muted">Added: {{ fav.created_at|date:"M d, Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-heart" style="font-size: 3rem; color: #dee2e6;"></i>
+    <p class="text-muted mt-3">You haven't favorited any workers yet.</p>
+    <a href="{% url 'create_job' %}" class="btn btn-primary">Post a Job to Find Workers</a>
+</div>
+{% endif %}
+{% endblock %}
