@@ -25,6 +25,7 @@ LocalKaam is a web-based platform designed to connect customers with local servi
 * 📅 Book services easily
 * 📋 Manage bookings
 * ⭐ Rating & feedback system (optional)
+* 🛡️ Admin panel for moderation
 
 ---
 
