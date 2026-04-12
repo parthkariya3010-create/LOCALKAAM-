@@ -192,7 +192,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# Only include local static files if they exist (for development)
+STATIC_DIR = BASE_DIR / "static"
+if STATIC_DIR.exists():
+    STATICFILES_DIRS = [STATIC_DIR]
+else:
+    STATICFILES_DIRS = []
 STATIC_ROOT = (
     BASE_DIR / "staticfiles"
 )  # Required for production 'collectstatic' command
