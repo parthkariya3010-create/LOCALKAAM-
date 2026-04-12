@@ -84,6 +84,9 @@ WSGI_APPLICATION = "LOCALKAAM.wsgi.application"
 # Support Railway's DATABASE_URL or fall back to individual env vars
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Detect if running on Railway (has PORT but not a local database setup)
+IS_RAILWAY = os.getenv("PORT") is not None and not os.getenv("DB_HOST")
+
 if DATABASE_URL:
     # Railway provides DATABASE_URL in format: mysql://user:password@host:port/dbname
     DATABASES = {
@@ -93,10 +96,9 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
-elif os.getenv("ENVIRONMENT") == "production":
-    # Production mode without DATABASE_URL - this is likely Railway without linked database
-    # Use a dummy SQLite database that won't connect to anything
-    # This allows the app to start while we fix the database setup
+elif IS_RAILWAY:
+    # Running on Railway without DATABASE_URL - use in-memory SQLite
+    # This allows app to start while database is being configured
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -104,7 +106,7 @@ elif os.getenv("ENVIRONMENT") == "production":
         }
     }
 else:
-    # Fallback for local development with individual env vars
+    # Local development with individual env vars
     DATABASES = {
         "default": {
             "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
@@ -120,7 +122,7 @@ else:
 
 # Disable problematic MySQL system checks that fail on first startup
 # when database isn't fully ready yet
-if os.getenv("ENVIRONMENT") == "production":
+if IS_RAILWAY or os.getenv("ENVIRONMENT") == "production":
     SILENCED_SYSTEM_CHECKS = [
         "django.db.backends.mysql.W002",  # MySQL 5.7+ strict mode warning
         "models.W042",  # Auto-created primary key warning
