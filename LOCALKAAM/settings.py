@@ -26,8 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# IMPORTANT: Generate a new SECRET_KEY on Railway by adding it as an environment variable
+# Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 SECRET_KEY = os.getenv(
-    "SECRET_KEY", "django-insecure-x=dl9%$iv+uq&nn%3)@j9g=+78*!=2#p1py*0rdmz=y*s9e@lx"
+    "SECRET_KEY", "j9oz00-+ferr9x#qvu@&1u@lomdu97k=dtd4vs1k064nqi7pw&"
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -222,9 +224,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================================
 
 # HTTPS/SSL Settings
-SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
-SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
-CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
+# In production on Railway, these should be True for security
+# Railway handles SSL termination, so we enable these settings
+SECURE_SSL_REDIRECT = IS_RAILWAY or os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
+SESSION_COOKIE_SECURE = (
+    IS_RAILWAY or os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
+)
+CSRF_COOKIE_SECURE = IS_RAILWAY or os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
