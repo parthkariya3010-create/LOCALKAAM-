@@ -93,6 +93,16 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
+elif os.getenv("ENVIRONMENT") == "production":
+    # Production mode without DATABASE_URL - this is likely Railway without linked database
+    # Use a dummy SQLite database that won't connect to anything
+    # This allows the app to start while we fix the database setup
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",  # In-memory DB, won't persist but app will start
+        }
+    }
 else:
     # Fallback for local development with individual env vars
     DATABASES = {
@@ -113,6 +123,7 @@ else:
 if os.getenv("ENVIRONMENT") == "production":
     SILENCED_SYSTEM_CHECKS = [
         "django.db.backends.mysql.W002",  # MySQL 5.7+ strict mode warning
+        "models.W042",  # Auto-created primary key warning
     ]
 else:
     SILENCED_SYSTEM_CHECKS = []
