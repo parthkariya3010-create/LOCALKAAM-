@@ -81,16 +81,15 @@ WSGI_APPLICATION = "LOCALKAAM.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
-        'NAME': os.getenv('DB_NAME', 'localkaam_db'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'CONN_MAX_AGE': 600,  # Connection pooling - keep connections alive for 10 minutes
+    "default": {
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
+        "NAME": os.getenv("DB_NAME", "localkaam_db"),
+        "USER": os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+        "CONN_MAX_AGE": 600,  # Connection pooling - keep connections alive for 10 minutes
     }
-}
 }
 
 
@@ -124,7 +123,9 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "LocalKaam <noreply@localkaam.com>")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL", "LocalKaam <noreply@localkaam.com>"
+)
 
 # Domain for email links - CRITICAL: Use environment variable for production
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "http://localhost:8000")
@@ -154,7 +155,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"  # Required for production 'collectstatic' command
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)  # Required for production 'collectstatic' command
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -173,7 +176,12 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_SECURITY_POLICY = {
     "default-src": ("'self'",),
     "script-src": ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "code.jquery.com"),
-    "style-src": ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "fonts.googleapis.com"),
+    "style-src": (
+        "'self'",
+        "'unsafe-inline'",
+        "cdn.jsdelivr.net",
+        "fonts.googleapis.com",
+    ),
     "font-src": ("'self'", "fonts.gstatic.com"),
     "img-src": ("'self'", "data:", "https:"),
 }
