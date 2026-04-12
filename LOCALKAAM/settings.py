@@ -33,7 +33,8 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# Will be configured after IS_RAILWAY is defined
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -118,6 +119,17 @@ else:
             "CONN_MAX_AGE": 600,  # Connection pooling - keep connections alive for 10 minutes
         }
     }
+
+
+# Configure ALLOWED_HOSTS based on environment
+# Build from environment variable or use defaults
+ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
+
+# Auto-add Railway domain if running on Railway without explicit ALLOWED_HOSTS
+if IS_RAILWAY and not os.getenv("ALLOWED_HOSTS"):
+    # Add wildcard for Railway's auto-generated domains
+    ALLOWED_HOSTS.extend(["*.railway.app", "*.up.railway.app"])
 
 
 # Disable problematic MySQL system checks that fail on first startup
