@@ -225,9 +225,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================================
 
 # HTTPS/SSL Settings
-# In production on Railway, these should be True for security
-# Railway handles SSL termination, so we enable these settings
-SECURE_SSL_REDIRECT = IS_RAILWAY or os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
+# NOTE: Railway handles SSL termination at edge, so we should NOT redirect
+# Redirecting causes infinite loops. Railway serves HTTPS automatically.
+SECURE_SSL_REDIRECT = False  # Disable - Railway handles SSL at edge
 SESSION_COOKIE_SECURE = (
     IS_RAILWAY or os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
 )
