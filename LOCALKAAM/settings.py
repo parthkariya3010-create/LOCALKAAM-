@@ -108,6 +108,16 @@ else:
     }
 
 
+# Disable problematic MySQL system checks that fail on first startup
+# when database isn't fully ready yet
+if os.getenv("ENVIRONMENT") == "production":
+    SILENCED_SYSTEM_CHECKS = [
+        "django.db.backends.mysql.W002",  # MySQL 5.7+ strict mode warning
+    ]
+else:
+    SILENCED_SYSTEM_CHECKS = []
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
