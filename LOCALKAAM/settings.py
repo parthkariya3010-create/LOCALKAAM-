@@ -124,16 +124,15 @@ else:
 
 
 # Configure ALLOWED_HOSTS based on environment
-# Build from environment variable or use defaults
-ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
-ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
-
-# Always add Railway wildcard domains in production for flexibility
+# In production on Railway, allow all hosts (Railway handles security at edge)
 if IS_RAILWAY:
-    # Add wildcard for all Railway domains (*.railway.app and *.up.railway.app)
-    ALLOWED_HOSTS.extend(["*.railway.app", "*.up.railway.app"])
-    # Remove duplicates while preserving order
-    ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
+    # Production on Railway - accept any domain
+    # Railway's infrastructure provides DDoS/security at edge level
+    ALLOWED_HOSTS = ["*"]
+else:
+    # Local development - specific hosts only
+    ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+    ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
 
 
 # Disable problematic MySQL system checks that fail on first startup
