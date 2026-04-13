@@ -47,12 +47,21 @@ def register(request):
             user.is_active = False
             user.save()
 
-            send_verification_email(user, request)
+            # Try to send verification email, but don't block registration if it fails
+            try:
+                send_verification_email(user, request)
+                messages.success(
+                    request,
+                    "Registration successful! Please check your email to verify your account.",
+                )
+            except Exception as e:
+                # Email sending failed, but allow registration to complete
+                print(f"Email error during registration: {e}")
+                messages.success(
+                    request,
+                    "Registration successful! However, we couldn't send the verification email. Please contact support.",
+                )
 
-            messages.success(
-                request,
-                "Registration successful! Please check your email to verify your account.",
-            )
             return redirect("login")
         else:
             messages.error(request, "Please fix the errors below.")
