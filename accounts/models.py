@@ -45,28 +45,53 @@ class User(AbstractUser):
         return self.password_reset_token
 
     def verify_email(self, token):
+        """Verify email with token expiry validation (24 hours)"""
         if self.email_verification_token == token:
+            # Check if token is still valid (within 24 hours)
+            if self.email_verification_sent_at:
+                token_age_seconds = (
+                    timezone.now() - self.email_verification_sent_at
+                ).total_seconds()
+                if token_age_seconds > 86400:  # 24 hours in seconds
+                    return False  # Token expired
+
             self.is_email_verified = True
             self.is_active = True
             self.email_verification_token = ""
+            self.email_verification_sent_at = None
             self.save(
                 update_fields=[
                     "is_email_verified",
                     "is_active",
                     "email_verification_token",
+                    "email_verification_sent_at",
                 ]
             )
             return True
         return False
 
     def reset_password(self, token, new_password):
+        """Reset password with token expiry validation (1 hour)"""
         if self.password_reset_token == token:
             if self.password_reset_sent_at:
-                if (timezone.now() - self.password_reset_sent_at).seconds < 3600:
+                # Check if token is still valid (within 1 hour)
+                token_age_seconds = (
+                    timezone.now() - self.password_reset_sent_at
+                ).total_seconds()
+                if token_age_seconds < 3600:  # 1 hour in seconds
                     self.set_password(new_password)
                     self.password_reset_token = ""
-                    self.save(update_fields=["password", "password_reset_token"])
+                    self.password_reset_sent_at = None
+                    self.save(
+                        update_fields=[
+                            "password",
+                            "password_reset_token",
+                            "password_reset_sent_at",
+                        ]
+                    )
                     return True
+                else:
+                    return False  # Token expired
         return False
 
 
