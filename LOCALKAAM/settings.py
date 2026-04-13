@@ -89,9 +89,6 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Detect if running on Railway (has PORT but not a local database setup)
 IS_RAILWAY = os.getenv("PORT") is not None and not os.getenv("DB_HOST")
-print(
-    f"DEBUG: PORT={os.getenv('PORT')}, DB_HOST={os.getenv('DB_HOST')}, IS_RAILWAY={IS_RAILWAY}"
-)
 
 if DATABASE_URL:
     # Railway provides DATABASE_URL in format: mysql://user:password@host:port/dbname
@@ -135,12 +132,10 @@ if IS_RAILWAY:
         "*",
         "localkaam.up.railway.app",
     ]  # Include specific domain as fallback
-    print(f"DEBUG: Running on Railway, ALLOWED_HOSTS set to {ALLOWED_HOSTS}")
 else:
     # Local development - specific hosts only
     ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
     ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
-    print(f"DEBUG: NOT on Railway, ALLOWED_HOSTS set to {ALLOWED_HOSTS}")
 
 
 # Disable problematic MySQL system checks that fail on first startup

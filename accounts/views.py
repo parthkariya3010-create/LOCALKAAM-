@@ -35,7 +35,7 @@ def home(request):
     return render(request, "index.html")
 
 
-# @rate_limit(key_prefix="register", max_attempts=3, timeout=600)  # Temporarily disabled for debugging
+@rate_limit(key_prefix="register", max_attempts=3, timeout=600)
 def register(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
