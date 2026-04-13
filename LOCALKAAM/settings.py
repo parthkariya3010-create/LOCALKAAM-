@@ -131,8 +131,11 @@ else:
 if IS_RAILWAY:
     # Production on Railway - accept any domain
     # Railway's infrastructure provides DDoS/security at edge level
-    ALLOWED_HOSTS = ["*"]
-    print(f"DEBUG: Running on Railway, ALLOWED_HOSTS set to ['*']")
+    ALLOWED_HOSTS = [
+        "*",
+        "localkaam.up.railway.app",
+    ]  # Include specific domain as fallback
+    print(f"DEBUG: Running on Railway, ALLOWED_HOSTS set to {ALLOWED_HOSTS}")
 else:
     # Local development - specific hosts only
     ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
