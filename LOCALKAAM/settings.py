@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 # Load environment variables from .env file
 load_dotenv()
@@ -26,8 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# IMPORTANT: Generate a new SECRET_KEY on Railway by adding it as an environment variable
-# Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 SECRET_KEY = os.getenv(
     "SECRET_KEY", "j9oz00-+ferr9x#qvu@&1u@lomdu97k=dtd4vs1k064nqi7pw&"
 )
@@ -35,8 +32,9 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-# Will be configured after IS_RAILWAY is defined
-ALLOWED_HOSTS = []
+# Configure allowed hosts
+ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
 
 
 # Application definition
@@ -84,69 +82,17 @@ WSGI_APPLICATION = "LOCALKAAM.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# Support Railway's DATABASE_URL or fall back to individual env vars
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Detect if running on Railway (has PORT but not a local database setup)
-IS_RAILWAY = os.getenv("PORT") is not None and not os.getenv("DB_HOST")
-
-if DATABASE_URL:
-    # Railway provides DATABASE_URL in format: mysql://user:password@host:port/dbname
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+DATABASES = {
+    "default": {
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
+        "NAME": os.getenv("DB_NAME", "localkaam_db"),
+        "USER": os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+        "CONN_MAX_AGE": 600,  # Connection pooling - keep connections alive for 10 minutes
     }
-elif IS_RAILWAY:
-    # Running on Railway without DATABASE_URL - use in-memory SQLite
-    # This allows app to start while database is being configured
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",  # In-memory DB, won't persist but app will start
-        }
-    }
-else:
-    # Local development with individual env vars
-    DATABASES = {
-        "default": {
-            "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
-            "NAME": os.getenv("DB_NAME", "localkaam_db"),
-            "USER": os.getenv("DB_USER", "root"),
-            "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", "localhost"),
-            "PORT": os.getenv("DB_PORT", "3306"),
-            "CONN_MAX_AGE": 600,  # Connection pooling - keep connections alive for 10 minutes
-        }
-    }
-
-
-# Configure ALLOWED_HOSTS based on environment
-# In production on Railway, allow all hosts (Railway handles security at edge)
-if IS_RAILWAY:
-    # Production on Railway - accept any domain
-    # Railway's infrastructure provides DDoS/security at edge level
-    ALLOWED_HOSTS = [
-        "*",
-        "localkaam.up.railway.app",
-    ]  # Include specific domain as fallback
-else:
-    # Local development - specific hosts only
-    ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
-    ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
-
-
-# Disable problematic MySQL system checks that fail on first startup
-# when database isn't fully ready yet
-if IS_RAILWAY or os.getenv("ENVIRONMENT") == "production":
-    SILENCED_SYSTEM_CHECKS = [
-        "django.db.backends.mysql.W002",  # MySQL 5.7+ strict mode warning
-        "models.W042",  # Auto-created primary key warning
-    ]
-else:
-    SILENCED_SYSTEM_CHECKS = []
+}
 
 
 # Password validation
@@ -224,17 +170,13 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # ============================================================================
-# SECURITY SETTINGS FOR PRODUCTION
+# SECURITY SETTINGS
 # ============================================================================
 
 # HTTPS/SSL Settings
-# NOTE: Railway handles SSL termination at edge, so we should NOT redirect
-# Redirecting causes infinite loops. Railway serves HTTPS automatically.
-SECURE_SSL_REDIRECT = False  # Disable - Railway handles SSL at edge
-SESSION_COOKIE_SECURE = (
-    IS_RAILWAY or os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
-)
-CSRF_COOKIE_SECURE = IS_RAILWAY or os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
+CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True

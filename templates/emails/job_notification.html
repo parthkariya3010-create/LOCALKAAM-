@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Job Posted - LocalKaam</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .email-body {
+            padding: 30px 20px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .job-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+        }
+        .job-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 0 0 10px 0;
+        }
+        .job-details {
+            font-size: 14px;
+            color: #555;
+            margin: 8px 0;
+        }
+        .job-budget {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .cta-button {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .cta-button a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 12px 35px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        .email-footer {
+            background-color: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666666;
+        }
+        .email-footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>💼 New Job Available!</h1>
+        </div>
+        
+        <div class="email-body">
+            <p>Hi {{ user.name }},</p>
+            
+            <p>A new job matching your skills has been posted on LocalKaam!</p>
+            
+            <div class="job-card">
+                <p class="job-title">{{ job.title }}</p>
+                <p class="job-details"><strong>📍 Location:</strong> {{ job.location }}</p>
+                <p class="job-details"><strong>📝 Description:</strong> {{ job.description|truncatewords:30 }}</p>
+                <p class="job-details"><strong>💰 Budget:</strong> <span class="job-budget">${{ job.budget }}</span></p>
+                <p class="job-details"><strong>📅 Posted:</strong> {{ job.created_at|date:"M d, Y" }}</p>
+            </div>
+            
+            <p>This could be a great opportunity! Review the job details and submit a quotation if you're interested.</p>
+            
+            <div class="cta-button">
+                <a href="{{ view_job_url }}">View Job Details</a>
+            </div>
+            
+            <p style="font-size: 14px; color: #666;">
+                You're receiving this email because you're a verified service provider with matching skills.
+            </p>
+        </div>
+        
+        <div class="email-footer">
+            <p>&copy; {{ current_year }} LocalKaam. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
