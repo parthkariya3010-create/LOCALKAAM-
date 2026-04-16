@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
+import os
 from .forms import (
     UserRegistrationForm,
     UserLoginForm,
@@ -1198,11 +1199,16 @@ official.localkaam@gmail.com
             )
 
         except Exception as e:
-            print(f"Error sending email: {str(e)}")
+            import traceback
+
+            error_msg = str(e)
+            error_trace = traceback.format_exc()
+            print(f"Error sending email: {error_msg}")
+            print(f"Full traceback:\n{error_trace}")
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Error sending message. Please try again later.",
+                    "message": f"Error sending message: {error_msg}",
                 },
                 status=500,
             )
