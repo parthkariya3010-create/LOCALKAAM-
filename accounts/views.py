@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Avg
 from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.urls import resolve
+from django.urls.exceptions import Resolver404
 from .forms import (
     UserRegistrationForm,
     UserLoginForm,
@@ -349,7 +352,7 @@ def worker_dashboard(request):
             worker_skills = [
                 s.strip().lower() for s in ast.literal_eval(worker_skills_raw)
             ]
-        except:
+        except (ValueError, SyntaxError):
             worker_skills = [
                 s.strip().lower() for s in worker_skills_raw.split(",") if s.strip()
             ]
@@ -378,7 +381,7 @@ def worker_dashboard(request):
         if "full_day" in available_slots:
             time_slot_match = True
         else:
-            time_slot_match = not available_slots or job.time_slot in available_slots
+            time_slot_match = available_slots and job.time_slot in available_slots
 
         if location_match and skill_match and time_slot_match:
             matched_jobs.append(job)
@@ -386,13 +389,15 @@ def worker_dashboard(request):
     confirmed_jobs = Job.objects.filter(worker=worker, status="confirmed").order_by(
         "date"
     )
-    completed_jobs = Job.objects.filter(worker=worker, status="completed")
+    completed_jobs = Job.objects.filter(
+        worker=worker, status="completed"
+    ).prefetch_related("quotations")
     completed_jobs_count = completed_jobs.count()
 
     total_earnings = sum(
-        job.quotations.filter(status="accepted").first().offered_price
+        quotation.offered_price
         for job in completed_jobs
-        if job.quotations.filter(status="accepted").first()
+        for quotation in job.quotations.filter(status="accepted")
     )
 
     active_negotiations = Negotiation.objects.filter(
@@ -863,6 +868,12 @@ def negotiation_detail(request, negotiation_id):
             return redirect("worker_dashboard")
 
         elif action == "reject":
+            if request.user != negotiation.worker:
+                messages.error(
+                    request, "You are not authorized to reject this negotiation."
+                )
+                return redirect("negotiation_detail", negotiation_id=negotiation.id)
+
             negotiation.status = "rejected"
             negotiation.save()
 
@@ -877,6 +888,12 @@ def negotiation_detail(request, negotiation_id):
             return redirect("negotiation_detail", negotiation_id=negotiation.id)
 
         elif action == "cancel":
+            if request.user != negotiation.customer:
+                messages.error(
+                    request, "You are not authorized to cancel this negotiation."
+                )
+                return redirect("negotiation_detail", negotiation_id=negotiation.id)
+
             negotiation.status = "cancelled"
             negotiation.save()
 
@@ -1000,7 +1017,21 @@ def toggle_favorite(request, worker_id):
         Favorite.objects.create(customer=request.user, worker=worker)
         messages.success(request, f"{worker.name} added to favorites!")
 
-    return redirect(request.META.get("HTTP_REFERER", "customer_dashboard"))
+    # Safe redirect using referer or default
+    referer = request.META.get("HTTP_REFERER", "")
+    if referer:
+        try:
+            # Validate that the referer is from our own domain
+            from urllib.parse import urlparse
+
+            referer_host = urlparse(referer).netloc
+            request_host = request.get_host()
+            if referer_host == request_host:
+                return HttpResponseRedirect(referer)
+        except:
+            pass
+
+    return redirect("customer_dashboard")
 
 
 @login_required

@@ -167,7 +167,7 @@ def send_password_reset_email(user, request):
 
 def send_job_notification_email(user, job):
     """Send email notification for new job listing to matched workers"""
-    subject = f"New Job Available: {job.title}"
+    subject = f"New Job Available: {job.category}"
 
     # Prepare context for template rendering
     context = {
@@ -204,13 +204,13 @@ def send_job_notification_email(user, job):
 
 def send_quotation_received_email(user, quotation):
     """Send email notification when a worker submits a quotation"""
-    subject = f"New Quotation Received - {quotation.job.title}"
+    subject = f"New Quotation Received - {quotation.job.category}"
 
     context = {
         "user": user,
         "quotation": quotation,
         "worker_name": quotation.worker.name,
-        "job_title": quotation.job.title,
+        "job_title": quotation.job.category,
         "view_quotation_url": f"{settings.SITE_DOMAIN}/quotations/{quotation.id}/",
         "current_year": timezone.now().year,
     }
@@ -220,9 +220,9 @@ def send_quotation_received_email(user, quotation):
         plain_message = f"""
 Hi {user.name},
 
-{quotation.worker.name} has submitted a quotation for your job: {quotation.job.title}
+{quotation.worker.name} has submitted a quotation for your job: {quotation.job.category}
 
-Quotation Amount: ${quotation.amount}
+Quotation Amount: ${quotation.offered_price}
 Message: {quotation.message}
 
 View the quotation: {context["view_quotation_url"]}
@@ -251,7 +251,7 @@ LocalKaam Team
 
 def send_negotiation_update_email(user, negotiation):
     """Send email notification when negotiation status changes"""
-    subject = f"Negotiation Update - {negotiation.job.title}"
+    subject = f"Negotiation Update - {negotiation.job.category}"
 
     context = {
         "user": user,
@@ -259,7 +259,7 @@ def send_negotiation_update_email(user, negotiation):
         "other_user": negotiation.worker
         if negotiation.customer == user
         else negotiation.customer,
-        "job_title": negotiation.job.title,
+        "job_title": negotiation.job.category,
         "status": negotiation.status,
         "view_negotiation_url": f"{settings.SITE_DOMAIN}/negotiations/{negotiation.id}/",
         "current_year": timezone.now().year,
@@ -279,7 +279,7 @@ def send_negotiation_update_email(user, negotiation):
         plain_message = f"""
 Hi {user.name},
 
-{context["other_user"].name} {status_message} for the job: {negotiation.job.title}
+{context["other_user"].name} {status_message} for the job: {negotiation.job.category}
 
 View the negotiation details: {context["view_negotiation_url"]}
 
