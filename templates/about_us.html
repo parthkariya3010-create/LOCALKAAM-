@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - LocalKaam</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --secondary: #3498db;
+            --accent: #00d9a5;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --muted: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            background: #fff;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary) !important;
+        }
+        
+        .navbar-brand i {
+            color: var(--secondary);
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark) !important;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--secondary) !important;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            color: white;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #f8fafe 0%, #e8f4f8 100%);
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary);
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .page-header p {
+            color: var(--muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+        
+        .about-hero {
+            background: #f8fafe;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+        }
+        
+        .about-hero h3 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .about-hero p {
+            color: var(--muted);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        
+        .mission-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .mission-card:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.1);
+        }
+        
+        .mission-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            color: white;
+        }
+        
+        .mission-card h4 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .mission-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-box {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .team-member {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .team-member:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), #00d9a5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+            color: white;
+        }
+        
+        .team-member h5 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-member p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .team-member .role {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .value-item {
+            display: flex;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+        
+        .value-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .value-content h5 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .value-content p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+            margin-top: 5rem;
+        }
+        
+        footer h5 {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        footer p, footer a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+        
+        footer a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-briefcase me-2"></i>LocalKaam
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary" href="{% url 'register' %}">Get Started</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>About LocalKaam</h1>
+            <p>We're building a community that connects customers with trusted local professionals, making home services simple, transparent, and accessible.</p>
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section class="section">
+        <div class="container">
+            <div class="row align-items-center gap-5">
+                <div class="col-lg-6">
+                    <div class="about-hero">
+                        <h3><i class="bi bi-book me-2" style="color: var(--secondary);"></i>Our Story</h3>
+                        <p>
+                            LocalKaam was founded with a simple vision: to make finding trusted local professionals as easy as a few clicks. We recognized the gap in the market where customers needed reliable help for home services, and skilled professionals deserved better opportunities to reach customers.
+                        </p>
+                        <p>
+                            Starting as a small startup, we've grown into a thriving marketplace that has helped thousands of customers and workers connect, collaborate, and succeed together. Today, LocalKaam is the most trusted platform for local services in the region.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-hero">
+                        <h3><i class="bi bi-target me-2" style="color: var(--secondary);"></i>Our Mission</h3>
+                        <p>
+                            Our mission is to empower local communities by creating a transparent, fair, and secure marketplace where customers can easily find quality services and professionals can grow their businesses with confidence.
+                        </p>
+                        <p>
+                            We believe that by removing intermediaries and building trust through transparency, verification, and fair pricing, we can create positive economic opportunities for everyone involved—customers, workers, and communities alike.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Values Section -->
+    <section class="section" style="background: #f8fafe;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Core Values</h2>
+                <p>These principles guide everything we do</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Trust & Security</h5>
+                            <p>We prioritize the safety and security of every transaction. Verified profiles, secure payments, and transparent reviews build trust in our community.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-equality"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Fairness & Transparency</h5>
+                            <p>Fair pricing for professionals, transparent pricing for customers, and honest communication—no hidden fees or surprises.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Community First</h5>
+                            <p>We support local professionals and empower communities. Our success is measured by the growth and satisfaction of our members.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Innovation</h5>
+                            <p>We continuously improve our platform with new features and better technology to make the experience seamless for both customers and workers.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Growth & Opportunity</h5>
+                            <p>We believe in creating sustainable opportunities for professionals to grow their businesses and for customers to access quality services.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="value-item">
+                        <div class="value-icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <div class="value-content">
+                            <h5>Customer Support</h5>
+                            <p>Your satisfaction matters. We're here to help with responsive support and to resolve any issues quickly and fairly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Impact by the Numbers</h2>
+                <p>Growing every day to serve our community better</p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">5K+</div>
+                    <div class="stat-label">Trusted Professionals</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">25K+</div>
+                    <div class="stat-label">Jobs Completed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">4.8/5</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">$2M+</div>
+                    <div class="stat-label">Value Transacted</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Satisfaction Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section" style="background: #f8fafe;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Meet the Team</h2>
+                <p>Dedicated professionals working to make LocalKaam the best platform for local services</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <div class="team-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h5>Rajesh Kumar</h5>
+                        <p class="role">Founder & CEO</p>
+                        <p>Visionary leader with 15+ years in tech startups. Passionate about building community-driven platforms.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <div class="team-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h5>Priya Sharma</h5>
+                        <p class="role">CTO & Co-founder</p>
+                        <p>Full-stack engineer with expertise in building scalable platforms. Leads our technology innovation.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <div class="team-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h5>Amit Patel</h5>
+                        <p class="role">Head of Operations</p>
+                        <p>Operations expert with proven track record in marketplace management and business growth.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <div class="team-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h5>Sofia Lopez</h5>
+                        <p class="role">Head of Customer Success</p>
+                        <p>Customer-focused leader dedicated to ensuring satisfaction and building strong community relationships.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose LocalKaam?</h2>
+                <p>What makes us different from other platforms</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <h4>Fair Commission</h4>
+                        <p>We charge the lowest commission rates in the industry, ensuring professionals keep more of their earnings.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <h4>Verified Professionals</h4>
+                        <p>Every professional on our platform is verified and vetted to ensure quality and reliability.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-wallet"></i>
+                        </div>
+                        <h4>Secure Payments</h4>
+                        <p>All payments are secured through our platform, protecting both customers and professionals.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-headset"></i>
+                        </div>
+                        <h4>24/7 Support</h4>
+                        <p>Our dedicated support team is available around the clock to help resolve any issues.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h4>Grow Your Business</h4>
+                        <p>Built-in tools and resources to help professionals expand their customer base and increase earnings.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="bi bi-star"></i>
+                        </div>
+                        <h4>Community Driven</h4>
+                        <p>We actively listen to feedback and continuously improve our platform based on user needs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="background: linear-gradient(135deg, var(--primary), #2c5282); color: white;">
+        <div class="container text-center">
+            <h2 style="font-weight: 700; margin-bottom: 1rem;">Ready to Get Started?</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 2rem;">Join our community of trusted professionals and satisfied customers</p>
+            <a href="{% url 'register' %}" class="btn btn-light" style="padding: 0.8rem 2rem; font-weight: 600;">
+                Join LocalKaam Today <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5><i class="bi bi-briefcase me-2"></i>LocalKaam</h5>
+                    <p>Connecting customers with trusted local professionals. Making home services easier and more accessible.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/">Home</a></li>
+                        <li class="mb-2"><a href="/features">Features</a></li>
+                        <li class="mb-2"><a href="/how-it-works">How It Works</a></li>
+                        <li class="mb-2"><a href="/services">Services</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>More</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/about">About Us</a></li>
+                        <li class="mb-2"><a href="/contact">Contact Us</a></li>
+                        <li class="mb-2"><a href="{% url 'login' %}">Login</a></li>
+                        <li class="mb-2"><a href="{% url 'register' %}">Register</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Contact</h5>
+                    <p><i class="bi bi-envelope me-2"></i>support@localkaam.com</p>
+                    <p><i class="bi bi-phone me-2"></i>+1 234 567 8900</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 LocalKaam. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

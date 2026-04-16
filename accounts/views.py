@@ -1076,3 +1076,29 @@ def password_reset_confirm(request, token):
     except User.DoesNotExist:
         messages.error(request, "Invalid reset link.")
         return redirect("login")
+
+
+# Website informational pages
+def features(request):
+    """Display features page"""
+    return render(request, "features.html")
+
+
+def how_it_works(request):
+    """Display how it works page"""
+    return render(request, "how_it_works.html")
+
+
+def services(request):
+    """Display services page"""
+    return render(request, "services.html")
+
+
+def about_us(request):
+    """Display about us page"""
+    return render(request, "about_us.html")
+
+
+def contact_us(request):
+    """Display contact us page"""
+    return render(request, "contact_us.html")

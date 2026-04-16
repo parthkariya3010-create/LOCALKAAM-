@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - LocalKaam</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --secondary: #3498db;
+            --accent: #00d9a5;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --muted: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            background: #fff;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary) !important;
+        }
+        
+        .navbar-brand i {
+            color: var(--secondary);
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark) !important;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--secondary) !important;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            color: white;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #f8fafe 0%, #e8f4f8 100%);
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary);
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .page-header p {
+            color: var(--muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+        
+        .feature-icon.blue {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .feature-icon.green {
+            background: linear-gradient(135deg, #00d9a5, #00b894);
+            color: white;
+        }
+        
+        .feature-icon.purple {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .feature-icon.orange {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        .feature-icon.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .feature-icon.teal {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            color: white;
+        }
+        
+        .feature-card h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .feature-benefits {
+            background: #f8fafe;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+        }
+        
+        .benefit-item {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .benefit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .benefit-item h5 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .benefit-item p {
+            color: var(--muted);
+            margin: 0;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+            margin-top: 5rem;
+        }
+        
+        footer h5 {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        footer p, footer a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+        
+        footer a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-briefcase me-2"></i>LocalKaam
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary" href="{% url 'register' %}">Get Started</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Our Features</h1>
+            <p>Discover what makes LocalKaam the best platform for connecting customers with trusted local professionals.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose LocalKaam?</h2>
+                <p>We provide innovative features designed for both customers and workers</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon blue">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <h4>Location Based Matching</h4>
+                        <p>Find workers in your area with our intelligent location-based matching system. Get faster service and support local professionals.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon green">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <h4>Transparent Pricing</h4>
+                        <p>No hidden fees. See prices upfront and negotiate directly with workers. Get competitive quotes from multiple professionals.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon purple">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <h4>Smart Scheduling</h4>
+                        <p>Workers set their availability. Book services at times that work best for your schedule with real-time availability updates.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon orange">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <h4>Verified Reviews</h4>
+                        <p>Read authentic reviews from real customers. Make informed decisions based on verified ratings and detailed feedback.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon red">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h4>Safe & Secure</h4>
+                        <p>Protected transactions, verified user profiles, and secure payment processing. Your safety is our priority.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon teal">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <h4>Direct Communication</h4>
+                        <p>Communicate directly with workers through our messaging system. Negotiate terms and discuss project details easily.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="section" style="background: #f8fafe;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2 style="color: var(--primary); font-weight: 700; margin-bottom: 2rem;">For Customers</h2>
+                    <div class="feature-benefits">
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Quick Job Posting</h5>
+                            <p>Post your job in minutes with our easy-to-use form. Describe your needs and get matched with qualified workers instantly.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Competitive Quotes</h5>
+                            <p>Receive multiple quotes from different workers. Compare prices and quality to get the best value for your money.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Track Progress</h5>
+                            <p>Monitor your job status in real-time. Stay updated on progress and communicate directly with your assigned worker.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Leave Reviews</h5>
+                            <p>Share your experience after the job is complete. Help other customers find reliable professionals.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <h2 style="color: var(--primary); font-weight: 700; margin-bottom: 2rem;">For Workers</h2>
+                    <div class="feature-benefits">
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Flexible Work</h5>
+                            <p>Set your own schedule and availability. Work when you want and manage multiple jobs easily through your dashboard.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Grow Your Business</h5>
+                            <p>Build your reputation with verified reviews. Attract more customers and grow your income over time.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Fair Pricing</h5>
+                            <p>You control your rates. Negotiate directly with customers and set prices that reflect your skills and experience.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h5><i class="bi bi-check-circle me-2" style="color: var(--accent);"></i>Secure Payments</h5>
+                            <p>Get paid securely for completed jobs. Our platform ensures timely and reliable payment processing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="background: linear-gradient(135deg, var(--primary), #2c5282); color: white;">
+        <div class="container text-center">
+            <h2 style="font-weight: 700; margin-bottom: 1rem;">Experience the Difference</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 2rem;">Join thousands of satisfied customers and workers using LocalKaam</p>
+            <a href="{% url 'register' %}" class="btn btn-light" style="padding: 0.8rem 2rem; font-weight: 600;">
+                Get Started Today <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5><i class="bi bi-briefcase me-2"></i>LocalKaam</h5>
+                    <p>Connecting customers with trusted local professionals. Making home services easier and more accessible.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/">Home</a></li>
+                        <li class="mb-2"><a href="/features">Features</a></li>
+                        <li class="mb-2"><a href="/how-it-works">How It Works</a></li>
+                        <li class="mb-2"><a href="/services">Services</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>More</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/about">About Us</a></li>
+                        <li class="mb-2"><a href="/contact">Contact Us</a></li>
+                        <li class="mb-2"><a href="{% url 'login' %}">Login</a></li>
+                        <li class="mb-2"><a href="{% url 'register' %}">Register</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Contact</h5>
+                    <p><i class="bi bi-envelope me-2"></i>support@localkaam.com</p>
+                    <p><i class="bi bi-phone me-2"></i>+1 234 567 8900</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 LocalKaam. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

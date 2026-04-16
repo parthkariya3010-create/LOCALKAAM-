@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - LocalKaam</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #1e3a5f; --secondary: #3498db; --accent: #00d9a5; --dark: #1a1a2e; --light: #f8f9fa; --muted: #6c757d; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--dark); background: #fff; }
+        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08); padding: 1rem 0; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary) !important; }
+        .nav-link { font-weight: 500; color: var(--dark) !important; }
+        .nav-link:hover { color: var(--secondary) !important; }
+        .btn-primary { background: var(--secondary); border: none; padding: 0.6rem 1.5rem; font-weight: 500; border-radius: 8px; }
+        .btn-primary:hover { background: #2980b9; }
+        .page-header { background: linear-gradient(135deg, #f8fafe 0%, #e8f4f8 100%); padding: 4rem 0; }
+        .page-header h1 { color: var(--primary); font-size: 3rem; font-weight: 700; }
+        .section { padding: 5rem 0; }
+        .section-title { text-align: center; margin-bottom: 3rem; }
+        .section-title h2 { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+        .service-card { background: white; border-radius: 16px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .service-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
+        .service-icon { width: 100px; height: 100px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .service-card h4 { font-weight: 600; color: var(--primary); margin-bottom: 1rem; }
+        .service-card p { color: var(--muted); line-height: 1.6; }
+        footer { background: var(--dark); color: white; padding: 4rem 0 2rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-briefcase me-2"></i>LocalKaam</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                    <li class="nav-item ms-lg-3"><a class="btn btn-primary" href="{% url 'register' %}">Get Started</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container"><h1>Our Services</h1><p>Find skilled professionals for any job</p></div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-title"><h2>Categories of Services</h2></div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-tools"></i></div><h4>Plumbing</h4><p>Professional plumbers for repairs, installations, and maintenance. From pipe fixes to new installations.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-lightning-charge"></i></div><h4>Electrical</h4><p>Licensed electricians for wiring, repairs, and installations. Safe and code-compliant electrical work.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-hammer"></i></div><h4>Carpentry</h4><p>Expert carpenters for furniture, repairs, and custom woodwork. Quality craftsmanship guaranteed.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-palette"></i></div><h4>Painting</h4><p>Professional painters for interior and exterior painting. Transform your space with quality paint work.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-thermometer-half"></i></div><h4>AC & Cooling</h4><p>AC technicians for installation, repair, and maintenance. Beat the heat with expert cooling solutions.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-house-heart"></i></div><h4>House Cleaning</h4><p>Professional cleaners for regular or deep cleaning. Keep your home fresh and spotless.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-cone-striped"></i></div><h4>Construction</h4><p>Construction workers and contractors for renovation and building projects of all sizes.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-flower2"></i></div><h4>Gardening</h4><p>Gardening experts for landscaping, maintenance, and beautification of outdoor spaces.</p></div></div>
+                <div class="col-md-6 col-lg-4"><div class="service-card"><div class="service-icon"><i class="bi bi-boxes"></i></div><h4>Moving & Storage</h4><p>Professional movers for residential and commercial relocations with safe handling.</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background: var(--dark); color: white; padding: 4rem 0 2rem; margin-top: 5rem;">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4"><h5>LocalKaam</h5><p>Connecting customers with trusted local professionals.</p></div>
+                <div class="col-lg-2"><h5>Links</h5><ul class="list-unstyled"><li><a href="/" style="color: rgba(255,255,255,0.7);">Home</a></li><li><a href="/about" style="color: rgba(255,255,255,0.7);">About</a></li><li><a href="/contact" style="color: rgba(255,255,255,0.7);">Contact</a></li></ul></div>
+                <div class="col-lg-6"><h5>Contact</h5><p><i class="bi bi-envelope me-2"></i>support@localkaam.com</p></div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
