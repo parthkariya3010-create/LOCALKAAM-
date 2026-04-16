@@ -177,7 +177,73 @@
             background: #252841 !important;
         }
         
-        .hero {
+        /* Dark mode text color fixes */
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode h5,
+        body.dark-mode h6,
+        body.dark-mode p,
+        body.dark-mode span,
+        body.dark-mode li,
+        body.dark-mode a {
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode .service-card,
+        body.dark-mode .feature-card,
+        body.dark-mode .step-card {
+            background: #303654 !important;
+            border: 1px solid #404560 !important;
+        }
+        
+        body.dark-mode .service-card h4,
+        body.dark-mode .feature-card h4,
+        body.dark-mode .step-card h4 {
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode .service-card p,
+        body.dark-mode .feature-card p,
+        body.dark-mode .step-card p {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode footer {
+            background: #1a1a2e !important;
+        }
+        
+        body.dark-mode footer h5 {
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode footer p,
+        body.dark-mode footer a,
+        body.dark-mode footer li {
+            color: #b0b0b0 !important;
+        }
+        
+        body.dark-mode footer a:hover {
+            color: #3498db !important;
+        }
+        
+        body.dark-mode .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #808080 !important;
+        }
+        
+        body.dark-mode button:not(.theme-toggle-btn) {
+            background: #3498db !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        
+        body.dark-mode button:not(.theme-toggle-btn):hover {
+            background: #2980b9 !important;
+        }
+        
+                .hero {
             min-height: 90vh;
             display: flex;
             align-items: center;
@@ -891,26 +957,12 @@
              body.classList.add('dark-mode');
              themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i><span id="themeText">Light</span>';
              localStorage.setItem('theme', 'dark');
-             
-             // Update all sections for dark mode
-             document.querySelectorAll('section').forEach(section => {
-                 if (!section.classList.contains('hero') && !section.classList.contains('cta-section')) {
-                     section.style.background = getComputedStyle(section).background === 'rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box' 
-                         ? '#252841' 
-                         : section.style.background;
-                 }
-             });
          }
          
          function disableDarkMode() {
              body.classList.remove('dark-mode');
              themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i><span id="themeText">Dark</span>';
              localStorage.setItem('theme', 'light');
-             
-             // Restore original background colors
-             document.querySelectorAll('section').forEach(section => {
-                 section.style.background = '';
-             });
          }
          
          themeToggle.addEventListener('click', function() {
