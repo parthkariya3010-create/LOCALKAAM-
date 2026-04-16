@@ -22,15 +22,20 @@
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            color: var(--dark);
-            background: #fff;
-            overflow-y: scroll;
-        }
+             box-sizing: border-box;
+         }
+         
+         html {
+             height: 100%;
+         }
+         
+         body {
+             font-family: 'Inter', system-ui, -apple-system, sans-serif;
+             color: var(--dark);
+             background: #fff;
+             overflow-y: scroll;
+             min-height: 100vh;
+         }
         
         .navbar {
             background: rgba(255, 255, 255, 0.95);
@@ -270,15 +275,100 @@
             color: white;
         }
         
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            margin-top: 3rem;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
-        }
-    </style>
-</head>
+         .footer-bottom {
+             border-top: 1px solid rgba(255, 255, 255, 0.1);
+             padding-top: 2rem;
+             margin-top: 3rem;
+             text-align: center;
+             color: rgba(255, 255, 255, 0.5);
+         }
+         
+         /* Dark Mode Styles */
+         body.dark-mode {
+             background: #1a1a2e;
+             color: #ffffff;
+         }
+         
+         body.dark-mode .navbar {
+             background: rgba(26, 26, 46, 0.95);
+         }
+         
+         body.dark-mode .nav-link {
+             color: #ffffff !important;
+         }
+         
+         body.dark-mode .nav-link:hover {
+             color: var(--secondary) !important;
+         }
+         
+         body.dark-mode .page-header {
+             background: linear-gradient(135deg, #252841 0%, #303654 100%);
+         }
+         
+         body.dark-mode .page-header h1,
+         body.dark-mode .section-title h2 {
+             color: #ffffff;
+         }
+         
+         body.dark-mode .page-header p,
+         body.dark-mode .section-title p {
+             color: #b8bcc4;
+         }
+         
+         body.dark-mode .about-hero {
+             background: #303654;
+         }
+         
+         body.dark-mode .about-hero h3,
+         body.dark-mode .mission-card h4,
+         body.dark-mode .team-member h5,
+         body.dark-mode .value-content h5 {
+             color: #ffffff;
+         }
+         
+         body.dark-mode .about-hero p,
+         body.dark-mode .mission-card p,
+         body.dark-mode .team-member p,
+         body.dark-mode .value-content p {
+             color: #b8bcc4;
+         }
+         
+         body.dark-mode .mission-card {
+             background: #252841;
+             border: 2px solid #404875;
+         }
+         
+         body.dark-mode .mission-card:hover {
+             border-color: var(--secondary);
+         }
+         
+         body.dark-mode .team-member {
+             background: #252841;
+             border: 1px solid #404875;
+         }
+         
+         body.dark-mode section[style*="background: #f8fafe"] {
+             background: #252841 !important;
+         }
+         
+         body.dark-mode section[style*="linear-gradient(135deg, var(--primary), #2c5282)"] {
+             background: linear-gradient(135deg, #252841, #303654) !important;
+         }
+         
+         body.dark-mode .btn-light {
+             background: #303654 !important;
+             color: #ffffff !important;
+         }
+         
+         body.dark-mode h2 {
+             color: #ffffff;
+         }
+         
+         body.dark-mode p {
+             color: #b8bcc4;
+         }
+     </style>
+ </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg sticky-top">
@@ -289,27 +379,32 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-primary" href="{% url 'dashboard' %}">
-                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-primary" href="{% url 'register' %}">Get Started</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+             <div class="collapse navbar-collapse" id="navbarNav">
+                 <ul class="navbar-nav ms-auto align-items-center">
+                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                     <li class="nav-item">
+                         <button id="themeToggle" class="btn btn-sm" style="background: none; border: none; cursor: pointer; color: var(--secondary); font-size: 1.2rem; padding: 0.5rem;">
+                             <i class="bi bi-moon"></i>
+                         </button>
+                     </li>
+                     {% if user.is_authenticated %}
+                         <li class="nav-item ms-lg-3">
+                             <a class="btn btn-primary" href="{% url 'dashboard' %}">
+                                 <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                             </a>
+                         </li>
+                     {% else %}
+                         <li class="nav-item ms-lg-3">
+                             <a class="btn btn-primary" href="{% url 'register' %}">Get Started</a>
+                         </li>
+                     {% endif %}
+                 </ul>
+             </div>
         </div>
     </nav>
 
@@ -577,5 +672,40 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize theme from localStorage
+        function initializeTheme() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                updateThemeToggleButton();
+            }
+        }
+        
+        // Update theme toggle button icon
+        function updateThemeToggleButton() {
+            const button = document.getElementById('themeToggle');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const icon = button.querySelector('i');
+            if (isDarkMode) {
+                icon.classList.remove('bi-moon');
+                icon.classList.add('bi-sun');
+            } else {
+                icon.classList.remove('bi-sun');
+                icon.classList.add('bi-moon');
+            }
+        }
+        
+        // Theme toggle functionality
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            updateThemeToggleButton();
+        });
+        
+        // Initialize theme on page load
+        initializeTheme();
+    </script>
 </body>
 </html>
