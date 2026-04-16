@@ -628,7 +628,8 @@
                             Thank you! Your message has been sent successfully. We'll contact you soon.
                         </div>
                         
-                        <form id="contactForm">
+                        <form id="contactForm" method="POST">
+                            {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -871,31 +872,55 @@
         // Initialize theme on page load
         initializeTheme();
         
-        // Handle form submission
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(this);
-            const data = {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                subject: formData.get('subject'),
-                category: formData.get('category'),
-                message: formData.get('message')
-            };
-            
-            // Show success message (in production, this would send to a server)
-            console.log('Form submitted:', data);
-            document.getElementById('successMessage').classList.add('show');
-            this.reset();
-            
-            // Hide success message after 5 seconds
-            setTimeout(function() {
-                document.getElementById('successMessage').classList.remove('show');
-            }, 5000);
-        });
+         // Handle form submission
+         document.getElementById('contactForm').addEventListener('submit', function(e) {
+             e.preventDefault();
+             
+             // Get form data
+             const form = this;
+             const formData = new FormData(form);
+             
+             // Get CSRF token
+             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+             
+             // Show loading state
+             const submitButton = form.querySelector('button[type="submit"]');
+             const originalText = submitButton.innerText;
+             submitButton.disabled = true;
+             submitButton.innerText = 'Sending...';
+             
+             // Submit form via fetch
+             fetch(form.action || '/contact/', {
+                 method: 'POST',
+                 body: formData,
+                 headers: {
+                     'X-CSRFToken': csrfToken
+                 }
+             })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.success) {
+                     document.getElementById('successMessage').classList.add('show');
+                     form.reset();
+                     
+                     // Hide success message after 5 seconds
+                     setTimeout(function() {
+                         document.getElementById('successMessage').classList.remove('show');
+                     }, 5000);
+                 } else {
+                     alert('Error: ' + data.message);
+                 }
+             })
+             .catch(error => {
+                 console.error('Error:', error);
+                 alert('An error occurred. Please try again later.');
+             })
+             .finally(() => {
+                 // Restore button state
+                 submitButton.disabled = false;
+                 submitButton.innerText = originalText;
+             });
+         });
         
         // Handle FAQ toggle
         function toggleFaq(element) {

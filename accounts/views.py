@@ -1100,5 +1100,112 @@ def about_us(request):
 
 
 def contact_us(request):
-    """Display contact us page"""
+    """Handle contact us form submissions and display contact page"""
+    from django.core.mail import send_mail
+    from django.http import JsonResponse
+
+    if request.method == "POST":
+        # Get form data
+        name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        subject = request.POST.get("subject", "").strip()
+        category = request.POST.get("category", "").strip()
+        message = request.POST.get("message", "").strip()
+
+        # Validate required fields
+        if not all([name, email, subject, category, message]):
+            return JsonResponse(
+                {"success": False, "message": "Please fill in all required fields."},
+                status=400,
+            )
+
+        # Validate email format
+        from django.core.validators import validate_email
+
+        try:
+            validate_email(email)
+        except:
+            return JsonResponse(
+                {"success": False, "message": "Please enter a valid email address."},
+                status=400,
+            )
+
+        try:
+            # Prepare email content
+            contact_email = os.getenv("CONTACT_EMAIL", "official.localkaam@gmail.com")
+
+            email_subject = f"New Contact Form Submission: {subject}"
+
+            email_body = f"""
+New Contact Form Submission
+
+Name: {name}
+Email: {email}
+Phone: {phone if phone else "Not provided"}
+Category: {category}
+Subject: {subject}
+
+Message:
+{message}
+
+---
+This is an automated message from LocalKaam contact form.
+"""
+
+            # Send email to admin
+            send_mail(
+                email_subject,
+                email_body,
+                os.getenv("EMAIL_HOST_USER", "official.localkaam@gmail.com"),
+                [contact_email],
+                fail_silently=False,
+            )
+
+            # Also send confirmation email to user
+            user_email_subject = "We received your message - LocalKaam"
+            user_email_body = f"""
+Hello {name},
+
+Thank you for reaching out to LocalKaam. We have received your message and will get back to you as soon as possible.
+
+Your submission details:
+- Subject: {subject}
+- Category: {category}
+- Message: {message[:100]}...
+
+We typically respond within 24 hours.
+
+Best regards,
+LocalKaam Team
+official.localkaam@gmail.com
++91 8766554942
+"""
+
+            send_mail(
+                user_email_subject,
+                user_email_body,
+                os.getenv("EMAIL_HOST_USER", "official.localkaam@gmail.com"),
+                [email],
+                fail_silently=True,
+            )
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Thank you! Your message has been sent successfully. We'll contact you soon.",
+                }
+            )
+
+        except Exception as e:
+            print(f"Error sending email: {str(e)}")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Error sending message. Please try again later.",
+                },
+                status=500,
+            )
+
+    # For GET requests, just display the contact page
     return render(request, "contact_us.html")
