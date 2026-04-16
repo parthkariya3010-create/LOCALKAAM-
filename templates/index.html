@@ -19,6 +19,15 @@
             --muted: #6c757d;
         }
         
+        body.dark-mode {
+            --primary: #ffffff;
+            --secondary: #3498db;
+            --accent: #00d9a5;
+            --dark: #ffffff;
+            --light: #1a1a2e;
+            --muted: #b0b0b0;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -30,6 +39,12 @@
             color: var(--dark);
             background: #fff;
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #ffffff;
         }
         
         a {
@@ -103,6 +118,63 @@
         .btn-outline-primary:hover {
             background: var(--primary);
             color: white;
+        }
+        
+        .theme-toggle-btn {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        body.dark-mode .theme-toggle-btn {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+        
+        body.dark-mode .theme-toggle-btn:hover {
+            background: #ffc107;
+            color: #1a1a2e;
+        }
+        
+        .navbar.dark-mode {
+            background: rgba(26, 26, 46, 0.95) !important;
+            color: #ffffff;
+        }
+        
+        body.dark-mode .navbar {
+            background: rgba(26, 26, 46, 0.95) !important;
+            box-shadow: 0 2px 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-mode .nav-link {
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode .nav-link:hover {
+            color: #3498db !important;
+        }
+        
+        body.dark-mode .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2c3e50 100%);
+        }
+        
+        body.dark-mode section:not(.dark-mode-section) {
+            background: #252841 !important;
         }
         
         .hero {
@@ -472,30 +544,36 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-primary" href="{% url 'dashboard' %}">
-                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item ms-lg-3">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+             <div class="collapse navbar-collapse" id="navbarNav">
+                 <ul class="navbar-nav ms-auto align-items-center">
+                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                     <li class="nav-item ms-lg-3">
+                         <button id="themeToggle" class="theme-toggle-btn">
+                             <i class="bi bi-moon-fill"></i>
+                             <span id="themeText">Dark</span>
+                         </button>
+                     </li>
+                     {% if user.is_authenticated %}
+                         <li class="nav-item ms-lg-3">
+                             <a class="btn btn-primary" href="{% url 'dashboard' %}">
+                                 <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                             </a>
+                         </li>
+                     {% else %}
+                         <li class="nav-item ms-lg-3">
+                             <a class="nav-link" href="{% url 'login' %}">Login</a>
+                         </li>
+                         <li class="nav-item">
+                             <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+                         </li>
+                     {% endif %}
+                 </ul>
+             </div>
         </div>
     </nav>
 
@@ -793,9 +871,55 @@
             });
         }, observerOptions);
         
-        document.querySelectorAll('.feature-card, .service-card, .step-card').forEach(el => {
-            observer.observe(el);
-        });
-    </script>
+         document.querySelectorAll('.feature-card, .service-card, .step-card').forEach(el => {
+             observer.observe(el);
+         });
+         
+         // Theme toggle functionality
+         const themeToggle = document.getElementById('themeToggle');
+         const themeText = document.getElementById('themeText');
+         const html = document.documentElement;
+         const body = document.body;
+         
+         // Check for saved theme preference or default to light mode
+         const currentTheme = localStorage.getItem('theme') || 'light';
+         if (currentTheme === 'dark') {
+             enableDarkMode();
+         }
+         
+         function enableDarkMode() {
+             body.classList.add('dark-mode');
+             themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i><span id="themeText">Light</span>';
+             localStorage.setItem('theme', 'dark');
+             
+             // Update all sections for dark mode
+             document.querySelectorAll('section').forEach(section => {
+                 if (!section.classList.contains('hero') && !section.classList.contains('cta-section')) {
+                     section.style.background = getComputedStyle(section).background === 'rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box' 
+                         ? '#252841' 
+                         : section.style.background;
+                 }
+             });
+         }
+         
+         function disableDarkMode() {
+             body.classList.remove('dark-mode');
+             themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i><span id="themeText">Dark</span>';
+             localStorage.setItem('theme', 'light');
+             
+             // Restore original background colors
+             document.querySelectorAll('section').forEach(section => {
+                 section.style.background = '';
+             });
+         }
+         
+         themeToggle.addEventListener('click', function() {
+             if (body.classList.contains('dark-mode')) {
+                 disableDarkMode();
+             } else {
+                 enableDarkMode();
+             }
+         });
+     </script>
 </body>
 </html>
