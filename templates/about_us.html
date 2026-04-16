@@ -364,10 +364,83 @@
              color: #ffffff;
          }
          
-         body.dark-mode p {
-             color: #b8bcc4;
-         }
-     </style>
+          body.dark-mode p {
+              color: #b8bcc4;
+          }
+          
+          /* Dark Mode - Navbar Toggle Icon */
+          body.dark-mode .navbar-toggler-icon {
+              background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+          }
+
+          /* Dark Mode - Form Controls */
+          body.dark-mode .form-control {
+              background-color: #303654 !important;
+              border-color: #404875 !important;
+              color: #ffffff !important;
+          }
+
+          body.dark-mode .form-control:focus {
+              background-color: #303654 !important;
+              border-color: var(--secondary) !important;
+              color: #ffffff !important;
+          }
+
+          body.dark-mode .form-control::placeholder {
+              color: #b8bcc4 !important;
+          }
+
+          /* Dark Mode - Select Dropdown */
+          body.dark-mode select.form-control {
+              background-color: #303654 !important;
+              color: #ffffff !important;
+          }
+
+          body.dark-mode select.form-control option {
+              background-color: #252841;
+              color: #ffffff;
+          }
+
+          /* Dark Mode - Form Labels */
+          body.dark-mode .form-group label {
+              color: #ffffff !important;
+          }
+
+          /* Dark Mode - Inline styled text that uses var(--primary) */
+          body.dark-mode h2[style*="color: var(--primary)"],
+          body.dark-mode h3[style*="color: var(--primary)"],
+          body.dark-mode h4[style*="color: var(--primary)"],
+          body.dark-mode h5[style*="color: var(--primary)"] {
+              color: #ffffff !important;
+          }
+
+          /* Dark Mode - FAQ/Collapsible Text */
+          body.dark-mode .faq-question span,
+          body.dark-mode .faq-answer {
+              color: #ffffff !important;
+          }
+
+          body.dark-mode .faq-question i {
+              color: #ffffff !important;
+          }
+
+          /* Ensure all headings and content text are readable */
+          body.dark-mode .value-item h4 {
+              color: #ffffff !important;
+          }
+
+          body.dark-mode .value-item p {
+              color: #b8bcc4 !important;
+          }
+
+          body.dark-mode .team-member h5 {
+              color: #ffffff !important;
+          }
+
+          body.dark-mode .team-member .role {
+              color: #b8bcc4 !important;
+          }
+      </style>
  </head>
 <body>
     <!-- Navbar -->
