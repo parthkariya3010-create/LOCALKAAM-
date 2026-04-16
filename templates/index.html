@@ -126,37 +126,6 @@
             color: white;
         }
         
-        .theme-toggle-btn {
-            background: transparent;
-            border: 2px solid var(--secondary);
-            color: var(--secondary);
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .theme-toggle-btn:hover {
-            background: var(--secondary);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        body.dark-mode .theme-toggle-btn {
-            border-color: #ffc107;
-            color: #ffc107;
-        }
-        
-        body.dark-mode .theme-toggle-btn:hover {
-            background: #ffc107;
-            color: #1a1a2e;
-        }
-        
         .navbar.dark-mode {
             background: rgba(26, 26, 46, 0.95) !important;
             color: #ffffff;
@@ -313,18 +282,7 @@
              background-color: #2980b9 !important;
          }
          
-         
-        body.dark-mode button:not(.theme-toggle-btn) {
-            background: #3498db !important;
-            color: #ffffff !important;
-            border: none !important;
-        }
-        
-        body.dark-mode button:not(.theme-toggle-btn):hover {
-            background: #2980b9 !important;
-        }
-        
-                .hero {
+         .hero {
             min-height: 90vh;
             display: flex;
             align-items: center;
@@ -755,12 +713,11 @@
                      <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
                      <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                      <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                     <li class="nav-item ms-lg-3">
-                         <button id="themeToggle" class="theme-toggle-btn">
-                             <i class="bi bi-moon-fill"></i>
-                             <span id="themeText">Dark</span>
-                         </button>
-                     </li>
+                      <li class="nav-item">
+                          <button id="themeToggle" class="btn btn-sm" style="background: none; border: none; cursor: pointer; color: var(--secondary); font-size: 1.2rem; padding: 0.5rem;">
+                              <i class="bi bi-moon"></i>
+                          </button>
+                      </li>
                      {% if user.is_authenticated %}
                          <li class="nav-item ms-lg-3">
                              <a class="btn btn-primary" href="{% url 'dashboard' %}">
@@ -1060,55 +1017,57 @@
             }
         });
         
-        // Fade in animation on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animation = 'fadeIn 0.8s ease-out forwards';
-                }
-            });
-        }, observerOptions);
-        
-         document.querySelectorAll('.feature-card, .service-card, .step-card').forEach(el => {
-             observer.observe(el);
-         });
+         // Fade in animation on scroll
+         const observerOptions = {
+             threshold: 0.1,
+             rootMargin: '0px 0px -50px 0px'
+         };
          
-         // Theme toggle functionality
-         const themeToggle = document.getElementById('themeToggle');
-         const themeText = document.getElementById('themeText');
-         const html = document.documentElement;
-         const body = document.body;
+         const observer = new IntersectionObserver(function(entries) {
+             entries.forEach(entry => {
+                 if (entry.isIntersecting) {
+                     entry.target.style.animation = 'fadeIn 0.8s ease-out forwards';
+                 }
+             });
+         }, observerOptions);
          
-         // Check for saved theme preference or default to light mode
-         const currentTheme = localStorage.getItem('theme') || 'light';
-         if (currentTheme === 'dark') {
-             enableDarkMode();
-         }
-         
-         function enableDarkMode() {
-             body.classList.add('dark-mode');
-             themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i><span id="themeText">Light</span>';
-             localStorage.setItem('theme', 'dark');
-         }
-         
-         function disableDarkMode() {
-             body.classList.remove('dark-mode');
-             themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i><span id="themeText">Dark</span>';
-             localStorage.setItem('theme', 'light');
-         }
-         
-         themeToggle.addEventListener('click', function() {
-             if (body.classList.contains('dark-mode')) {
-                 disableDarkMode();
-             } else {
-                 enableDarkMode();
-             }
-         });
-     </script>
+          document.querySelectorAll('.feature-card, .service-card, .step-card').forEach(el => {
+              observer.observe(el);
+          });
+          
+          // Initialize theme from localStorage
+          function initializeTheme() {
+              const isDarkMode = localStorage.getItem('darkMode') === 'true';
+              if (isDarkMode) {
+                  document.body.classList.add('dark-mode');
+                  updateThemeToggleButton();
+              }
+          }
+          
+          // Update theme toggle button icon
+          function updateThemeToggleButton() {
+              const button = document.getElementById('themeToggle');
+              const isDarkMode = document.body.classList.contains('dark-mode');
+              const icon = button.querySelector('i');
+              if (isDarkMode) {
+                  icon.classList.remove('bi-moon');
+                  icon.classList.add('bi-sun');
+              } else {
+                  icon.classList.remove('bi-sun');
+                  icon.classList.add('bi-moon');
+              }
+          }
+          
+          // Theme toggle functionality
+          document.getElementById('themeToggle').addEventListener('click', function() {
+              document.body.classList.toggle('dark-mode');
+              const isDarkMode = document.body.classList.contains('dark-mode');
+              localStorage.setItem('darkMode', isDarkMode);
+              updateThemeToggleButton();
+          });
+          
+          // Initialize theme on page load
+          initializeTheme();
+      </script>
 </body>
 </html>
