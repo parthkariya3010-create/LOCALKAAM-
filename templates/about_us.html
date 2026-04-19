@@ -117,25 +117,35 @@
             font-size: 1.1rem;
         }
         
-        .about-hero {
-            background: #f8fafe;
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            margin-bottom: 3rem;
-        }
-        
-        .about-hero h3 {
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        
-        .about-hero p {
-            color: var(--muted);
-            line-height: 1.8;
-            margin-bottom: 1rem;
-        }
+         .about-hero {
+             background: #f8fafe;
+             padding: 3rem 2rem;
+             border-radius: 16px;
+             margin-bottom: 3rem;
+             display: flex;
+             flex-direction: column;
+             height: 100%;
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+             transition: all 0.3s ease;
+         }
+         
+         .about-hero:hover {
+             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+         }
+         
+         .about-hero h3 {
+             color: var(--primary);
+             font-weight: 700;
+             margin-bottom: 1rem;
+             font-size: 1.5rem;
+         }
+         
+         .about-hero p {
+             color: var(--muted);
+             line-height: 1.8;
+             margin-bottom: 1rem;
+             flex-grow: 1;
+         }
         
         .mission-card {
             background: white;
@@ -229,24 +239,24 @@
             gap: 1rem;
         }
         
-        .value-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--secondary), #2980b9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
+         .value-icon {
+             width: 40px;
+             height: 40px;
+             border-radius: 50%;
+             background: linear-gradient(135deg, var(--secondary), #2980b9);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 1.2rem;
+             flex-shrink: 0;
+         }
         
-        .value-content h5 {
-            color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+         .value-content h5 {
+             color: var(--primary);
+             font-weight: 600;
+             margin-bottom: 0.5rem;
+         }
         
         .value-content p {
             color: var(--muted);
@@ -489,12 +499,12 @@
         </div>
     </section>
 
-    <!-- Our Story Section -->
-    <section class="section">
-        <div class="container">
-            <div class="row align-items-center gap-5">
-                <div class="col-lg-6">
-                    <div class="about-hero">
+     <!-- Our Story & Mission Section -->
+     <section class="section">
+         <div class="container">
+             <div class="row g-4 align-items-stretch">
+                 <div class="col-lg-6 d-flex">
+                     <div class="about-hero w-100">
                         <h3><i class="bi bi-book me-2" style="color: var(--secondary);"></i>Our Story</h3>
                         <p>
                             LocalKaam was founded with a simple vision: to make finding trusted local professionals as easy as a few clicks. We recognized the gap in the market where customers needed reliable help for home services, and skilled professionals deserved better opportunities to reach customers.
@@ -504,8 +514,8 @@
                         </p>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="about-hero">
+                 <div class="col-lg-6 d-flex">
+                     <div class="about-hero w-100">
                         <h3><i class="bi bi-target me-2" style="color: var(--secondary);"></i>Our Mission</h3>
                         <p>
                             Our mission is to empower local communities by creating a transparent, fair, and secure marketplace where customers can easily find quality services and professionals can grow their businesses with confidence.
@@ -539,15 +549,15 @@
                         </div>
                     </div>
                     
-                    <div class="value-item">
-                        <div class="value-icon">
-                            <i class="bi bi-equality"></i>
-                        </div>
-                        <div class="value-content">
-                            <h5>Fairness & Transparency</h5>
-                            <p>Fair pricing for professionals, transparent pricing for customers, and honest communication—no hidden fees or surprises.</p>
-                        </div>
-                    </div>
+                     <div class="value-item">
+                         <div class="value-icon">
+                             <i class="bi bi-hand-thumbs-up"></i>
+                         </div>
+                         <div class="value-content">
+                             <h5>Fairness & Transparency</h5>
+                             <p>Fair pricing for professionals, transparent pricing for customers, and honest communication—no hidden fees or surprises.</p>
+                         </div>
+                     </div>
                     
                     <div class="value-item">
                         <div class="value-icon">

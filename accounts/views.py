@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Avg
+from django.db import transaction
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.urls import resolve
@@ -60,7 +61,12 @@ def register(request):
                 )
             except Exception as e:
                 # Email sending failed, but allow registration to complete
-                print(f"Email error during registration: {e}")
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.error(
+                    f"Email error during registration for {user.email}: {str(e)}"
+                )
                 messages.success(
                     request,
                     "Registration successful! However, we couldn't send the verification email. Please contact support.",
@@ -120,61 +126,25 @@ def user_logout(request):
 
 
 @login_required
-def accept_quotation(request, quotation_id):
-    if request.user.role != "customer":
-        return redirect("dashboard")
-
-    quotation = get_object_or_404(
-        Quotation, id=quotation_id, job__customer=request.user, status="pending"
-    )
-
-    worker = quotation.worker
-    job_date = quotation.job.date
-
-    conflicting_jobs = Job.objects.filter(
-        worker=worker, date=job_date, status__in=["open", "confirmed"]
-    ).exists()
-
-    if conflicting_jobs:
-        messages.error(
-            request,
-            f"Worker {worker.name} already has a job on {job_date}. Cannot accept this quotation.",
-        )
-        return redirect("view_quotations", job_id=quotation.job.id)
-
-    quotation.status = "accepted"
-    quotation.save()
-
-    job = quotation.job
-    job.worker = worker
-    job.status = "confirmed"
-    job.save()
-
-    Quotation.objects.filter(job=job).exclude(id=quotation_id).update(status="rejected")
-
-    job_time_slot = get_worker_time_slot(job.time_slot)
-    Availability.objects.filter(
-        worker=worker, date=job_date, time_slot=job_time_slot
-    ).delete()
-
-    messages.success(request, f"Quotation accepted! Job assigned to {worker.name}")
-    return redirect("customer_dashboard")
-
-
-@login_required
 def customer_dashboard(request):
     if request.user.role != "customer":
         return redirect("dashboard")
-    jobs = Job.objects.filter(customer=request.user).order_by("-created_at")
+    jobs = (
+        Job.objects.filter(customer=request.user)
+        .select_related("worker")
+        .order_by("-created_at")
+    )
     jobs_open = jobs.filter(status="open").count()
     jobs_completed = jobs.filter(status="completed").count()
 
     from django.db.models import Count
 
     active_jobs = jobs.filter(status="confirmed").count()
-    pending_quotations = Quotation.objects.filter(
-        job__customer=request.user, status="pending"
-    ).count()
+    pending_quotations = (
+        Quotation.objects.filter(job__customer=request.user, status="pending")
+        .select_related("worker")
+        .count()
+    )
 
     active_negotiations = Negotiation.objects.filter(
         customer=request.user, status="active"
@@ -562,6 +532,7 @@ def view_quotations(request, job_id):
 
 
 @login_required
+@transaction.atomic
 def accept_quotation(request, quotation_id):
     if request.user.role != "customer":
         return redirect("dashboard")
@@ -651,12 +622,14 @@ def create_review(request, job_id):
             review.worker = job.worker
             review.save()
 
-            worker_profile = job.worker.worker_profile
-            avg_rating = Review.objects.filter(worker=job.worker).aggregate(
-                Avg("rating")
-            )["rating__avg"]
-            worker_profile.avg_rating = round(avg_rating, 2)
-            worker_profile.save()
+            # Check if worker profile exists before updating rating
+            if hasattr(job.worker, "worker_profile") and job.worker.worker_profile:
+                worker_profile = job.worker.worker_profile
+                avg_rating = Review.objects.filter(worker=job.worker).aggregate(
+                    Avg("rating")
+                )["rating__avg"]
+                worker_profile.avg_rating = round(avg_rating, 2) if avg_rating else 0.00
+                worker_profile.save()
 
             messages.success(request, "Review submitted successfully!")
             return redirect("customer_dashboard")
@@ -795,6 +768,7 @@ def worker_start_negotiation(request, job_id):
 
 
 @login_required
+@transaction.atomic
 def negotiation_detail(request, negotiation_id):
     negotiation = get_object_or_404(Negotiation, id=negotiation_id)
 
@@ -963,6 +937,7 @@ def verify_email(request, token):
         return redirect("login")
 
 
+@rate_limit(key_prefix="resend_verification", max_attempts=3, timeout=600)
 def resend_verification(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -1122,11 +1097,11 @@ def contact_us(request):
             )
 
         # Validate email format
-        from django.core.validators import validate_email
+        from django.core.validators import validate_email, ValidationError
 
         try:
             validate_email(email)
-        except:
+        except ValidationError:
             return JsonResponse(
                 {"success": False, "message": "Please enter a valid email address."},
                 status=400,

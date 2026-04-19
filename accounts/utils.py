@@ -69,7 +69,9 @@ def rate_limit(key_prefix, max_attempts=5, timeout=300):
                         request,
                         f"Too many attempts. Please try again in {remaining} seconds.",
                     )
-                    return view_func(request, *args, **kwargs)
+                    from django.shortcuts import redirect
+
+                    return redirect(request.path)
             return view_func(request, *args, **kwargs)
 
         return wrapper

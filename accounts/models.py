@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.core.validators import MinValueValidator, RegexValidator
+from decimal import Decimal
 from django.contrib.auth.hashers import make_password
 import uuid
 import secrets
@@ -107,12 +109,32 @@ class UserProfile(models.Model):
     profile_photo = models.ImageField(
         upload_to="profile_photos/", default="default.png", blank=True
     )
-    phone_number = models.CharField(max_length=20, blank=True)
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^\d{10}$",
+                message="Phone number must be exactly 10 digits.",
+                code="invalid_phone",
+            )
+        ],
+    )
     address = models.TextField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
     bio = models.TextField(blank=True, max_length=500)
-    emergency_contact = models.CharField(max_length=20, blank=True)
+    emergency_contact = models.CharField(
+        max_length=20,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^\d{10}$",
+                message="Emergency contact must be exactly 10 digits.",
+                code="invalid_phone",
+            )
+        ],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -185,9 +207,14 @@ class WorkerProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="worker_profile"
     )
     skills = models.CharField(max_length=255, help_text="Comma-separated skills")
-    experience = models.IntegerField(help_text="Years of experience")
+    experience = models.IntegerField(
+        help_text="Years of experience", validators=[MinValueValidator(0)]
+    )
     base_price = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="Base price per job"
+        max_digits=10,
+        decimal_places=2,
+        help_text="Base price per job",
+        validators=[MinValueValidator(Decimal("0.01"))],
     )
     location = models.CharField(max_length=100, blank=True, help_text="Work location")
     avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
@@ -235,7 +262,9 @@ class Quotation(models.Model):
     worker = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="quotations"
     )
-    offered_price = models.DecimalField(max_digits=10, decimal_places=2)
+    offered_price = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
     message = models.TextField(blank=True, help_text="Optional message from worker")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)

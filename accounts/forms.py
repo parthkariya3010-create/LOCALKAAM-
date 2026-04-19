@@ -52,7 +52,9 @@ class UserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = user.email.split("@")[0]
+        import uuid
+
+        user.username = f"user_{uuid.uuid4().hex[:12]}"
         if commit:
             user.save()
         return user
