@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -87,4 +87,6 @@ urlpatterns = [
         name="toggle_favorite",
     ),
     path("favorites/", views.favorites_list, name="favorites_list"),
+    # Media file serving
+    re_path(r"^media/(?P<filepath>.*)", views.serve_media, name="serve_media"),
 ]

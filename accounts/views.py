@@ -5,9 +5,10 @@ from django.contrib import messages
 from django.db.models import Q, Avg
 from django.db import transaction
 from django.utils import timezone
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
+from django.core.exceptions import SuspiciousFileOperation
 import os
 from .forms import (
     UserRegistrationForm,
@@ -1190,3 +1191,27 @@ official.localkaam@gmail.com
 
     # For GET requests, just display the contact page
     return render(request, "contact_us.html")
+
+
+def serve_media(request, filepath):
+    """
+    Serve media files safely
+    """
+    try:
+        from django.conf import settings
+
+        full_path = os.path.join(settings.MEDIA_ROOT, filepath)
+
+        # Security check - ensure path is within MEDIA_ROOT
+        full_path = os.path.abspath(full_path)
+        media_root = os.path.abspath(settings.MEDIA_ROOT)
+
+        if not full_path.startswith(media_root):
+            raise SuspiciousFileOperation("Attempted access outside MEDIA_ROOT")
+
+        if not os.path.exists(full_path):
+            return HttpResponse("File not found", status=404)
+
+        return FileResponse(open(full_path, "rb"), content_type="image/jpeg")
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
