@@ -11,12 +11,12 @@ Class-based views
     1. Add an import:  from other_app.views import Home
     2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
-    1. Import the include() function: from django.urls import include, path
+    1. Import the include() function:  from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts import views
@@ -30,6 +30,8 @@ urlpatterns = [
     path("about/", views.about_us, name="about_us"),
     path("contact/", views.contact_us, name="contact_us"),
     path("accounts/", include("accounts.urls")),
+    # Media file serving - MUST be before include to avoid conflict
+    re_path(r"^media/(?P<filepath>.*)", views.serve_media, name="serve_media"),
 ]
 
 # Serve media files in both DEBUG and production modes

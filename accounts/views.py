@@ -243,8 +243,8 @@ def edit_job(request, job_id):
 def delete_job(request, job_id):
     job = get_object_or_404(Job, id=job_id, customer=request.user)
 
-    if job.status != "open":
-        messages.error(request, "You can only delete jobs that are still open.")
+    if job.status == "completed":
+        messages.error(request, "You cannot delete completed jobs.")
         return redirect("customer_dashboard")
 
     if request.method == "POST":
