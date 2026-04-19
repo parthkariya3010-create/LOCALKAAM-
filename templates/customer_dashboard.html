@@ -305,7 +305,7 @@
                     </div>
                     {% if job.image %}
                     <div class="mb-2">
-                        <img src="{{ job.image.url }}" alt="Job Photo" class="img-thumbnail" style="max-height: 120px; border-radius: 8px; cursor: pointer; object-fit: cover;" onclick="window.open('{{ job.image.url }}', '_blank')" onerror="this.style.display='none'">
+                        <img src="{{ job.image.url }}" alt="Job Photo" class="img-thumbnail" style="max-height: 120px; border-radius: 8px; cursor: pointer; object-fit: cover;" onclick="window.open('{{ job.image.url }}', '_blank')">
                     </div>
                     {% else %}
                     <div class="mb-2 p-3 bg-light rounded text-center" style="border: 2px dashed #dee2e6;">

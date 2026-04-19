@@ -36,7 +36,7 @@ if not SECRET_KEY:
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # Configure allowed hosts
-ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS_STR = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_STR.split(",")]
 
 
@@ -169,7 +169,7 @@ STATIC_ROOT = (
     BASE_DIR / "staticfiles"
 )  # Required for production 'collectstatic' command
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # ============================================================================
