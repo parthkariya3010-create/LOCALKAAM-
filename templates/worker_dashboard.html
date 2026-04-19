@@ -274,7 +274,12 @@
                     </div>
                     <p class="job-description">{{ job.exact_location }}</p>
                     {% if job.image %}
-                    <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                    <img src="{{ job.image.url }}" alt="Job Photo" class="img-fluid rounded mb-2" style="max-height: 150px; object-fit: cover; cursor: pointer;" onclick="window.open('{{ job.image.url }}', '_blank')" onerror="this.style.display='none'">
+                    {% else %}
+                    <div class="mb-2 p-3 bg-light rounded text-center" style="border: 2px dashed #dee2e6;">
+                        <i class="bi bi-image" style="font-size: 2rem; color: #adb5bd;"></i>
+                        <p class="text-muted small mb-0 mt-2">No image uploaded</p>
+                    </div>
                     {% endif %}
                     <div class="job-details">
                         <span><i class="bi bi-person me-1"></i> {{ job.customer.name }}</span>

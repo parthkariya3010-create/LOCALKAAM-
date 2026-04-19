@@ -14,16 +14,19 @@
 <div class="card">
     <div class="card-body">
         <div class="mb-4 p-3 bg-light rounded">
-            <h5>Job Details</h5>
-            {% if job.image %}
-            <div class="mb-3">
-                <p class="mb-2"><strong>Customer's Photo:</strong></p>
-                <img src="{{ job.image.url }}" alt="Job Photo" class="img-thumbnail" style="max-height: 250px; border-radius: 8px; cursor: pointer;" onclick="window.open('{{ job.image.url }}', '_blank')">
-                <p class="text-muted small mt-1"><i class="bi bi-info-circle"></i> Click to view full size</p>
-            </div>
-            {% else %}
-            <p class="text-muted"><i class="bi bi-image"></i> No photo uploaded by customer</p>
-            {% endif %}
+             <h5>Job Details</h5>
+             {% if job.image %}
+             <div class="mb-3">
+                 <p class="mb-2"><strong>Customer's Photo:</strong></p>
+                 <img src="{{ job.image.url }}" alt="Job Photo" class="img-thumbnail" style="max-height: 250px; border-radius: 8px; cursor: pointer; object-fit: cover;" onclick="window.open('{{ job.image.url }}', '_blank')" onerror="this.style.display='none'">
+                 <p class="text-muted small mt-1"><i class="bi bi-info-circle"></i> Click to view full size</p>
+             </div>
+             {% else %}
+             <div class="mb-3 p-3 bg-white rounded text-center" style="border: 2px dashed #dee2e6;">
+                 <i class="bi bi-image" style="font-size: 2rem; color: #adb5bd;"></i>
+                 <p class="text-muted small mb-0 mt-2">No photo uploaded by customer</p>
+             </div>
+             {% endif %}
             <p class="mb-1"><strong>Category:</strong> {{ job.get_category_display }}</p>
             <p class="mb-1"><strong>Exact Location:</strong> {{ job.exact_location }}</p>
             <p class="mb-1"><strong>Location:</strong> {{ job.location }}</p>
