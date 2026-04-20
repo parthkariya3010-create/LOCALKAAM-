@@ -44,13 +44,30 @@ class RateLimiter:
 rate_limiter = RateLimiter()
 
 
-def rate_limit(key_prefix, max_attempts=5, timeout=300):
+def rate_limit(key_prefix, max_attempts=5, timeout=300, use_token_arg=None):
+    """
+    Rate limit decorator.
+
+    Args:
+        key_prefix: Prefix for the rate limit key
+        max_attempts: Maximum number of attempts allowed
+        timeout: Timeout in seconds before rate limit resets
+        use_token_arg: If provided, uses the named URL argument as the rate limit key
+                      instead of IP address. Useful for token-based endpoints.
+    """
+
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             if not settings.DEBUG:
-                ip = request.META.get("REMOTE_ADDR", "unknown")
-                key = f"{key_prefix}:{ip}"
+                if use_token_arg and use_token_arg in kwargs:
+                    # Use the token/identifier from URL kwargs as the key
+                    key = f"{key_prefix}:{kwargs[use_token_arg]}"
+                else:
+                    # Use IP address as the key
+                    ip = request.META.get("REMOTE_ADDR", "unknown")
+                    key = f"{key_prefix}:{ip}"
+
                 is_limited, remaining = rate_limiter.is_rate_limited(
                     key, max_attempts, timeout
                 )

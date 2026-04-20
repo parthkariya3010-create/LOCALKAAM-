@@ -919,6 +919,9 @@ def worker_negotiations(request):
     return render(request, "worker_negotiations.html", {"negotiations": negotiations})
 
 
+@rate_limit(
+    key_prefix="verify_email", max_attempts=10, timeout=60, use_token_arg="token"
+)
 def verify_email(request, token):
     try:
         user = User.objects.get(email_verification_token=token)
