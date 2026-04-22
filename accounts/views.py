@@ -10,6 +10,9 @@ from django.urls import resolve
 from django.urls.exceptions import Resolver404
 from django.core.exceptions import SuspiciousFileOperation
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 from .forms import (
     UserRegistrationForm,
     UserLoginForm,
@@ -83,16 +86,41 @@ def register(request):
 
 @login_required
 def dashboard(request):
+    # Refresh user from database to ensure latest data
+    request.user.refresh_from_db()
+
+    logger.info(
+        f"Dashboard accessed by {request.user.email}, role: {request.user.role}"
+    )
+
+    # Ensure role is set (fallback to customer if empty)
+    if not request.user.role or request.user.role == "":
+        logger.warning(f"User {request.user.email} has empty role, setting to customer")
+        request.user.role = "customer"
+        request.user.save(update_fields=["role"])
+
     if request.user.role == "customer":
+        logger.info(f"Redirecting customer {request.user.email} to customer_dashboard")
         return redirect("customer_dashboard")
     elif request.user.role == "worker":
+        logger.info(f"Redirecting worker {request.user.email} to worker_dashboard")
         return redirect("worker_dashboard")
-    return redirect("home")
+    else:
+        # Fallback: set to customer and redirect
+        logger.warning(
+            f"Unknown role '{request.user.role}' for user {request.user.email}, setting to customer"
+        )
+        request.user.role = "customer"
+        request.user.save(update_fields=["role"])
+        return redirect("customer_dashboard")
 
 
 @rate_limit(key_prefix="login", max_attempts=5, timeout=300)
 def user_login(request):
     if request.user.is_authenticated:
+        logger.info(
+            f"User {request.user.email} already authenticated, redirecting to dashboard"
+        )
         return redirect("dashboard")
 
     if request.method == "POST":
@@ -102,6 +130,7 @@ def user_login(request):
         try:
             user_obj = User.objects.get(email=email)
             if not user_obj.is_email_verified:
+                logger.warning(f"Login attempt for unverified email: {email}")
                 messages.warning(
                     request,
                     "Please verify your email first. Check your inbox for the verification link.",
@@ -112,9 +141,12 @@ def user_login(request):
 
         if form.is_valid():
             user = form.get_user()
+            logger.info(f"User {user.email} (role: {user.role}) logged in successfully")
             login(request, user)
             messages.success(request, "Login successful!")
             return redirect("dashboard")
+        else:
+            logger.warning(f"Login form validation failed for email: {email}")
     else:
         form = UserLoginForm()
     return render(request, "login.html", {"form": form})
